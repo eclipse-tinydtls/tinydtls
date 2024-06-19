@@ -18,7 +18,12 @@
  *
  *******************************************************************************/
 
+#include <version.h>
+#if KERNELVERSION < 0x3050000
 #include <zephyr/random/rand32.h>
+#else
+#include <zephyr/random/random.h>
+#endif
 
 #include "tinydtls.h"
 #include "dtls_prng.h"
