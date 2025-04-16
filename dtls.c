@@ -46,6 +46,10 @@
 #include "uthash.h"
 #endif /* DTLS_PEERS_NOHASH */
 
+#ifdef USE_PSA
+#include "psa/crypto.h"
+#endif
+
 #include "dtls_debug.h"
 #include "numeric.h"
 #include "netq.h"
@@ -327,6 +331,9 @@ free_context(dtls_context_t *context) {
 
 void
 dtls_init(void) {
+#ifdef USE_PSA
+  psa_crypto_init();
+#endif /* USE_PSA */
   dtls_clock_init();
   crypto_init();
   netq_init();
