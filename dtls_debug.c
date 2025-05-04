@@ -44,7 +44,9 @@
 #ifdef HAVE_NET_SOCKET_H
 #include <zephyr/net/socket.h>
 #endif /* HAVE_NET_SOCKET_H */
+#ifndef CONFIG_POSIX_API
 typedef int in_port_t;
+#endif /* CONFIG_POSIX_API */
 #endif /* WITH_ZEPHYR */
 
 #include "global.h"
