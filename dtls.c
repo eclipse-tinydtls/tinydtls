@@ -4491,7 +4491,7 @@ handle_alert(dtls_context_t *ctx, dtls_peer_t *peer,
 
   assert(peer);
 
-  if (data_length < 2)
+  if (data_length != 2)
     return dtls_alert_fatal_create(DTLS_ALERT_DECODE_ERROR);
 
   dtls_info("** Alert: level %d, description %d\n", data[0], data[1]);
