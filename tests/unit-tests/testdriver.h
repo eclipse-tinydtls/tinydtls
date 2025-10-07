@@ -10,30 +10,17 @@
  * http://www.eclipse.org/org/documents/edl-v10.php.
  */
 
-#include "testdriver.h"
+#ifndef _TESTDRIVER_H_
+#define _TESTDRIVER_H_
 
-#include "test_ccm.h"
-#include "test_ecc.h"
-#include "test_prf.h"
-#include "tinydtls.h"
+#include <stdio.h>
 
-int main(void) {
-  CU_ErrorCode result;
-  CU_BasicRunMode run_mode = CU_BRM_VERBOSE;
+// A bug fix for an outdated CUnit 2.1-3 that was compiled using a new MSVC
+#if _MSC_VER >= 1900
+#undef snprintf
+#endif
 
-  if (CU_initialize_registry() != CUE_SUCCESS) {
-    fprintf(stderr, "E: test framework initialization failed\n");
-    return -2;
-  }
+#include <CUnit/CUnit.h>
+#include <CUnit/Basic.h>
 
-  t_init_ccm_tests();
-  t_init_ecc_tests();
-  t_init_prf_tests();
-
-  CU_basic_set_mode(run_mode);
-  result = CU_basic_run_tests();
-
-  CU_cleanup_registry();
-
-  return result;
-}
+#endif /* _TESTDRIVER_H_ */

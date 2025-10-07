@@ -247,7 +247,7 @@ dsrv_print_addr(const session_t *addr, char *buf, size_t len) {
 #endif /* ! HAVE_INET_NTOP */
 }
 
-#if !defined(WITH_CONTIKI) && !defined(_MSC_VER)
+#if !defined(WITH_CONTIKI)
 
 static void
 dtls_logging_handler(log_t level, const char *message) {
@@ -410,7 +410,7 @@ dtls_dsrv_hexdump_log(log_t level, const char *name, const unsigned char *buf, s
   dtls_mutex_lock(&static_mutex);
 #endif /* DTLS_CONSTRAINED_STACK */
   if (extend) {
-    snprintf(message, sizeof(message), "%s: (%zu bytes):\n", name, length);
+    snprintf(message, sizeof(message), "%s: (%u bytes):\n", name, (unsigned)length);
     log_handler(level, message);
     len = 0;
     while (length-- && len + 1 < sizeof(message)) {
@@ -439,7 +439,7 @@ dtls_dsrv_hexdump_log(log_t level, const char *name, const unsigned char *buf, s
       }
     }
   } else {
-    len = snprintf(message, sizeof(message), "%s: (%zu bytes): ", name, length);
+    len = snprintf(message, sizeof(message), "%s: (%u bytes): ", name, (unsigned)length);
     while (length-- && len + 1 < sizeof(message)) {
       len += snprintf(&message[len], sizeof(message)-len, "%02X", *buf++);
     }
@@ -474,7 +474,7 @@ dtls_dsrv_hexdump_log(log_t level, const char *name, const unsigned char *buf, s
     PRINTF("%s ", loglevels[level]);
 
   if (extend) {
-    PRINTF("%s: (%zu bytes):\n", name, length);
+    PRINTF("%s: (%u bytes):\n", name, (unsigned)length);
 
     while (length--) {
       if (n % 16 == 0)
@@ -491,7 +491,7 @@ dtls_dsrv_hexdump_log(log_t level, const char *name, const unsigned char *buf, s
       }
     }
   } else {
-    PRINTF("%s: (%zu bytes): ", name, length);
+    PRINTF("%s: (%u bytes): ", name, (unsigned)length);
     while (length--)
       PRINTF("%02X", *buf++);
   }

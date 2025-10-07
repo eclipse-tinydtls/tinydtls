@@ -12,6 +12,8 @@
  *
  *******************************************************************************/
 
+#include "tinydtls.h"
+
 /* This is needed for apple */
 #define __APPLE_USE_RFC_3542
 
@@ -19,23 +21,31 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#else /* ! HAVE_UNISTD_H */
+#include "getopt.c"
+#endif /* ! HAVE_UNISTD_H */
 #include <sys/types.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif /* HAVE_SYS_TIME_H */
 #include <signal.h>
 
-#include "tinydtls.h"
 #include "dtls_debug.h"
 #include "dtls_ciphers_util.h"
 #include "dtls.h" 
 
 #ifdef IS_WINDOWS
+#include <io.h>
 #include <winsock2.h>
-#pragma comment(lib, "Ws2_32.lib")
 #define MSG_DONTWAIT 0
+#undef MSG_TRUNC
 #define MSG_TRUNC 0
+#ifdef _MSC_VER
+#define STDOUT_FILENO 1
+typedef int ssize_t;
+#endif /* _MSC_VER */
 #else /* ! IS_WINDOWS */
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -192,7 +202,7 @@ send_to_peer(struct dtls_context_t *ctx,
              session_t *session, uint8 *data, size_t len) {
 
   int fd = *(int *)dtls_get_app_data(ctx);
-  return sendto(fd, data, len, MSG_DONTWAIT,
+  return sendto(fd, (const char*)data, len, MSG_DONTWAIT,
                 &session->addr.sa, session->size);
 }
 
@@ -231,11 +241,15 @@ dtls_handle_read(struct dtls_context_t *ctx) {
 
   memset(&session, 0, sizeof(session_t));
   session.size = sizeof(session.addr);
-  len = recvfrom(*fd, buf, sizeof(buf), MSG_TRUNC,
+  len = recvfrom(*fd, (char*)buf, sizeof(buf), MSG_TRUNC,
                  &session.addr.sa, &session.size);
 
   if (len < 0) {
+#ifdef IS_WINDOWS
+    fprintf(stderr, "recvfrom: %d\n", WSAGetLastError());
+#else /* ! IS_WINDOWS */
     perror("recvfrom");
+#endif /* ! IS_WINDOWS */
     return -1;
   } else {
     dtls_debug("got %d bytes from port %d\n", len, 
@@ -317,8 +331,8 @@ usage(const char *program, const char *version) {
   fprintf(stderr, "\t-e\t\tforce extended master secret (RFC7627)\n"
          "\t-p port\t\tlisten on specified port (default is %d)\n"
          "\t-r\t\tforce renegotiation info (RFC5746)\n"
-         "\t-v num\t\tverbosity level (default: 3)\n",
-         DEFAULT_PORT);
+         "\t-v num\t\tverbosity level (default: %d)\n",
+         DEFAULT_PORT, dtls_get_log_level());
 }
 
 static dtls_handler_t cb = {
@@ -337,7 +351,7 @@ static dtls_handler_t cb = {
 
 int
 main(int argc, char **argv) {
-  log_t log_level = DTLS_LOG_WARN;
+  log_t log_level = dtls_get_log_level();
   fd_set rfds, wfds;
   struct timeval timeout;
   int fd, opt, result;
@@ -396,15 +410,22 @@ main(int argc, char **argv) {
 
   dtls_set_log_level(log_level);
 
+#ifdef IS_WINDOWS
+  WSADATA wsaData;
+  WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif /* IS_WINDOWS */
+
+  dtls_init();
+
   /* init socket and set it to non-blocking */
-  fd = socket(listen_addr.sin6_family, SOCK_DGRAM, 0);
+  fd = socket(listen_addr.sin6_family, SOCK_DGRAM, IPPROTO_UDP);
 
   if (fd < 0) {
     dtls_alert("socket: %s\n", strerror(errno));
     return 0;
   }
 
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on) ) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof(on) ) < 0) {
     dtls_alert("setsockopt SO_REUSEADDR: %s\n", strerror(errno));
   }
 #if 0
@@ -416,18 +437,18 @@ main(int argc, char **argv) {
 #endif
   on = 1;
   if (listen_addr.sin6_family == AF_INET6) {
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)) < 0) {
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&off, sizeof(off)) < 0) {
       dtls_alert("setsockopt IPV6_V6ONLY: %s\n", strerror(errno));
     }
 #ifdef IPV6_RECVPKTINFO
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, &on, sizeof(on) ) < 0) {
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, (const char*)&on, sizeof(on) ) < 0) {
 #else /* IPV6_RECVPKTINFO */
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_PKTINFO, &on, sizeof(on) ) < 0) {
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_PKTINFO, (const char*)&on, sizeof(on) ) < 0) {
 #endif /* IPV6_RECVPKTINFO */
       dtls_alert("setsockopt IPV6_PKTINFO: %s\n", strerror(errno));
     }
   }
-  if (setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &on, sizeof(on)) < 0) {
+  if (setsockopt(fd, IPPROTO_IP, IP_PKTINFO, (const char*)&on, sizeof(on)) < 0) {
     dtls_alert("setsockopt IP_PKTINFO: %s\n", strerror(errno));
   }
 
@@ -438,9 +459,11 @@ main(int argc, char **argv) {
     goto error;
   }
 
-  dtls_init();
-
-#ifndef IS_WINDOWS
+#ifdef IS_WINDOWS
+  signal(SIGINT, dtls_handle_signal);
+  signal(SIGTERM, dtls_handle_signal);
+  signal(SIGBREAK, dtls_handle_signal);
+#else /* ! IS_WINDOWS */
   memset (&sa, 0, sizeof(sa));
   sigemptyset(&sa.sa_mask);
   sa.sa_handler = dtls_handle_signal;
