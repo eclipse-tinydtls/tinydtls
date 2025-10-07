@@ -1,3 +1,5 @@
+#include "tinydtls.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,7 +14,6 @@
 #endif /* WITH_CONTIKI */
 
 //#include "dtls_debug.h"
-#include "tinydtls.h"
 #include "numeric.h"
 #include "ccm.h"
 
@@ -43,6 +44,7 @@ int main(int argc, char **argv) {
 #endif /* WITH_CONTIKI */
   long int len;
   size_t n;
+  int result = 0;
 
   rijndael_ctx ctx;
 
@@ -63,9 +65,11 @@ int main(int argc, char **argv) {
 				   data[n].msg, data[n].la);
     
     len +=  + data[n].la;
-    printf("Packet Vector #%lu ", n+1);
-    if ((size_t)len != data[n].r_lm || memcmp(data[n].msg, data[n].result, len))
+    printf("Packet Vector #%u ", (unsigned)(n+1));
+    if ((size_t)len != data[n].r_lm || memcmp(data[n].msg, data[n].result, len)) {
+      result = 1;
       printf("FAILED, ");
+    }
     else 
       printf("OK, ");
     
@@ -76,15 +80,17 @@ int main(int argc, char **argv) {
 				   data[n].msg + data[n].la, len - data[n].la, 
 				   data[n].msg, data[n].la);
     
-    if (len < 0)
-      printf("Packet Vector #%lu: cannot decrypt message\n", n+1);
+    if (len < 0) {
+      result = 1;
+      printf("Packet Vector #%u: cannot decrypt message\n", (unsigned)(n+1));
+    }
     else 
-      printf("\t*** MAC verified (total length = %lu) ***\n", len + data[n].la);
+      printf("\t*** MAC verified (total length = %u) ***\n", (unsigned)(len + data[n].la));
   }
 
 #ifdef WITH_CONTIKI
   PROCESS_END();
 #else /* WITH_CONTIKI */
-  return 0;
+  return result;
 #endif /* WITH_CONTIKI */
 }

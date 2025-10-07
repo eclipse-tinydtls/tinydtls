@@ -91,3 +91,5 @@ CMakeFiles
 tinydtls.dir
 Debug
 Release
+*.json
+out

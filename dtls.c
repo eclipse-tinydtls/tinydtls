@@ -1678,7 +1678,7 @@ dtls_prepare_record(dtls_peer_t *peer, dtls_security_parameters_t *security,
   unsigned int i;
 
   if (*rlen < DTLS_RH_LENGTH) {
-    dtls_alert("The sendbuf (%zu bytes) is too small\n", *rlen);
+    dtls_alert("The sendbuf (%u bytes) is too small\n", (unsigned)*rlen);
     return dtls_alert_fatal_create(DTLS_ALERT_INTERNAL_ERROR);
   }
 
@@ -3437,8 +3437,8 @@ check_server_certificate(dtls_context_t *ctx,
   data += DTLS_HS_LENGTH;
 
   if (dtls_uint24_to_int(data) != DTLS_EC_SUBJECTPUBLICKEY_SIZE) {
-    dtls_alert("expect length of %zu bytes for certificate\n",
-	       DTLS_EC_SUBJECTPUBLICKEY_SIZE);
+    dtls_alert("expect length of %u bytes for certificate\n",
+	       (unsigned)DTLS_EC_SUBJECTPUBLICKEY_SIZE);
     return dtls_alert_fatal_create(DTLS_ALERT_DECODE_ERROR);
   }
   data += sizeof(uint24);
