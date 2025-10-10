@@ -19,11 +19,12 @@
 #
 ###############################################################################
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(tinydtls)
 
 include (AutoConf.cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(NOT ZEPHYR_BASE)
    option(BUILD_SHARED_LIBS "Link using shared libs" OFF)
@@ -73,11 +74,11 @@ target_sources(tinydtls PRIVATE
    ecc/ecc.c)
 
 target_include_directories(tinydtls PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
-target_compile_definitions(tinydtls PUBLIC DTLSv12 WITH_SHA256 SHA2_USE_INTTYPES_H DTLS_CHECK_CONTENTTYPE)
+target_compile_definitions(tinydtls PUBLIC DTLSv12 WITH_SHA256 SHA2_USE_INTTYPES_H DTLS_CHECK_CONTENTTYPE $<$<BOOL:${make_tests}>:TEST_INCLUDE>)
 
 if(MSVC)
     option(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS "Export all symbols when compiling to a .dll" ON)
-    target_compile_options(tinydtls PRIVATE -Wall)
+    target_compile_options(tinydtls PRIVATE -Wall -wd4200 -wd4710 -wd4711 -wd4668 -wd4820 -wd5045 -D_CRT_SECURE_NO_WARNINGS)
     if(${WARNING_TO_ERROR})
         target_compile_options(tinydtls PRIVATE -WX)
      endif()
@@ -92,6 +93,10 @@ set_target_properties(tinydtls PROPERTIES VERSION ${PACKAGE_VERSION} SOVERSION $
 
 if( ${make_tests} )
     add_subdirectory(tests)
+    add_subdirectory(tests/unit-tests)
+    include(CTest)
+    add_test(NAME test COMMAND testdriver)
+    add_test(NAME ccm-test COMMAND ccm-test)
 endif()
 
 if(BUILD_SHARED_LIBS)

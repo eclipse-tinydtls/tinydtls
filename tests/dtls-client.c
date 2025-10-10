@@ -20,18 +20,42 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#else /* ! HAVE_UNISTD_H */
+#include "getopt.c"
+#endif /* ! HAVE_UNISTD_H */
 #include <ctype.h>
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif /* HAVE_NETINET_IN_H */
 #include <sys/types.h>
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif /* HAVE_SYS_SOCKET_H */
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif /* HAVE_SYS_TIME_H */
-
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif /* HAVE_ARPA_INET_H */
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif /* HAVE_NETDB_H */
 #include <signal.h>
+
+#ifdef IS_WINDOWS
+#include <io.h>
+#include <conio.h>
+#include <winsock2.h>
+#define MSG_DONTWAIT 0
+#undef MSG_TRUNC
+#define MSG_TRUNC 0
+#ifdef _MSC_VER
+#define STDOUT_FILENO 1
+typedef int ssize_t;
+#endif /* _MSC_VER */
+#endif /* IS_WINDOWS */
 
 #include "global.h"
 #include "dtls_debug.h"
@@ -137,6 +161,8 @@ get_psk_info(struct dtls_context_t *ctx UNUSED_PARAM,
              dtls_credentials_type_t type,
              const unsigned char *id, size_t id_len,
              unsigned char *result, size_t result_length) {
+  (void)ctx;
+  (void)session;
 
   switch (type) {
   case DTLS_PSK_IDENTITY:
@@ -214,11 +240,13 @@ try_send(struct dtls_context_t *ctx, session_t *dst, size_t len, char *buf) {
   }
 }
 
+#ifndef IS_WINDOWS
 static void
 handle_stdin(size_t *len, char *buf, size_t buf_len) {
   if (fgets(buf + *len, buf_len - *len, stdin))
     *len += strlen(buf + *len);
 }
+#endif /* IS_WINDOWS */
 
 static int
 read_from_peer(struct dtls_context_t *ctx,
@@ -237,7 +265,7 @@ send_to_peer(struct dtls_context_t *ctx,
              session_t *session, uint8 *data, size_t len) {
 
   int fd = *(int *)dtls_get_app_data(ctx);
-  return sendto(fd, data, len, MSG_DONTWAIT,
+  return sendto(fd, (const char *)data, len, MSG_DONTWAIT,
                 &session->addr.sa, session->size);
 }
 
@@ -278,11 +306,15 @@ dtls_handle_read(struct dtls_context_t *ctx) {
 
   memset(&session, 0, sizeof(session_t));
   session.size = sizeof(session.addr);
-  len = recvfrom(fd, buf, MAX_READ_BUF, MSG_TRUNC,
+  len = recvfrom(fd, (char *)buf, MAX_READ_BUF, MSG_TRUNC,
                  &session.addr.sa, &session.size);
 
   if (len < 0) {
+#ifdef IS_WINDOWS
+    fprintf(stderr, "recvfrom: %d\n", WSAGetLastError());
+#else /* ! IS_WINDOWS */
     perror("recvfrom");
+#endif /* ! IS_WINDOWS */
     return -1;
   } else {
     dtls_dsrv_log_addr(DTLS_LOG_DEBUG, "peer", &session);
@@ -379,9 +411,9 @@ usage( const char *program, const char *version) {
           "\t-p port\t\tlisten on specified port\n"
           "\t       \t\t(default is an ephemeral free port).\n"
           "\t-r\t\tforce renegotiation info (RFC5746)\n"
-          "\t-v num\t\tverbosity level (default: 3)\n"
+          "\t-v num\t\tverbosity level (default: %d)\n"
           "\tDefault destination port: %d\n",
-          DEFAULT_PORT);
+          dtls_get_log_level(), DEFAULT_PORT);
 }
 
 static dtls_handler_t cb = {
@@ -415,7 +447,7 @@ main(int argc, char **argv) {
   struct timeval timeout;
   unsigned short dst_port = 0;
   unsigned short local_port = 0;
-  log_t log_level = DTLS_LOG_WARN;
+  log_t log_level = dtls_get_log_level();
   int fd;
   ssize_t result;
   int on = 1;
@@ -428,6 +460,11 @@ main(int argc, char **argv) {
 
   memset(&dst, 0, sizeof(session_t));
   memset(&listen, 0, sizeof(session_t));
+
+#ifdef IS_WINDOWS
+  WSADATA wsaData;
+  WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif /* IS_WINDOWS */
 
   dtls_init();
 
@@ -530,14 +567,14 @@ main(int argc, char **argv) {
   dtls_set_log_level(log_level);
 
   /* init socket and set it to non-blocking */
-  fd = socket(dst.addr.sa.sa_family, SOCK_DGRAM, 0);
+  fd = socket(dst.addr.sa.sa_family, SOCK_DGRAM, IPPROTO_UDP);
 
   if (fd < 0) {
     dtls_alert("socket: %s\n", strerror(errno));
     return 0;
   }
 
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on) ) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&on, sizeof(on) ) < 0) {
     dtls_alert("setsockopt SO_REUSEADDR: %s\n", strerror(errno));
   }
 #if 0
@@ -550,15 +587,15 @@ main(int argc, char **argv) {
   on = 1;
   if (dst.addr.sa.sa_family == AF_INET6) {
 #ifdef IPV6_RECVPKTINFO
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, &on, sizeof(on) ) < 0) {
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, (const char *)&on, sizeof(on) ) < 0) {
 #else /* IPV6_RECVPKTINFO */
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_PKTINFO, &on, sizeof(on) ) < 0) {
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_PKTINFO, (const char *)&on, sizeof(on) ) < 0) {
 #endif /* IPV6_RECVPKTINFO */
       dtls_alert("setsockopt IPV6_PKTINFO: %s\n", strerror(errno));
     }
   }
   else {
-    if (setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &on, sizeof(on) ) < 0) {
+    if (setsockopt(fd, IPPROTO_IP, IP_PKTINFO, (const char *)&on, sizeof(on) ) < 0) {
       dtls_alert("setsockopt IP_PKTINFO: %s\n", strerror(errno));
     }
   }
@@ -581,10 +618,11 @@ main(int argc, char **argv) {
     }
   }
 
-  if (signal(SIGINT, dtls_handle_signal) == SIG_ERR) {
-    dtls_alert("An error occurred while setting a signal handler.\n");
-    return EXIT_FAILURE;
-  }
+  signal(SIGINT, dtls_handle_signal);
+  signal(SIGTERM, dtls_handle_signal);
+#ifdef IS_WINDOWS
+  signal(SIGBREAK, dtls_handle_signal);
+#endif /* IS_WINDOWS */
 
   dtls_context = dtls_new_context(&fd);
   if (!dtls_context) {
@@ -600,33 +638,51 @@ main(int argc, char **argv) {
     FD_ZERO(&rfds);
     FD_ZERO(&wfds);
 
+#ifndef IS_WINDOWS
     FD_SET(fileno(stdin), &rfds);
+#endif /* IS_WINDOWS */
     FD_SET(fd, &rfds);
     /* FD_SET(fd, &wfds); */
 
-    timeout.tv_sec = 5;
-    timeout.tv_usec = 0;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 100000;
 
     result = select(fd+1, &rfds, &wfds, 0, &timeout);
 
     if (result < 0) {
       /* error */
+#ifdef IS_WINDOWS
+      fprintf(stderr, "select: %d\n", WSAGetLastError());
+#else /* ! IS_WINDOWS */
       if (errno != EINTR)
         perror("select");
+#endif /* ! IS_WINDOWS */
     } else if (result == 0) {
       /* timeout */
+#ifdef IS_WINDOWS
+      if (kbhit()) {
+        buf[ len++ ] = (char)getch();
+        putch(buf[len - 1]);
+        if (len && (buf[len - 1] == '\n' || buf[len - 1] == '\r')) {
+          buf[len] = 0;
+          buf_ready = 1;
+        }
+      }
+#endif /* ! IS_WINDOWS */
     } else {
       /* ok */
       if (FD_ISSET(fd, &wfds))
         /* FIXME */;
       else if (FD_ISSET(fd, &rfds))
         dtls_handle_read(dtls_context);
+#ifndef IS_WINDOWS
       else if (FD_ISSET(fileno(stdin), &rfds)) {
         handle_stdin(&len, buf, sizeof(buf));
         if (len && buf[len - 1] == '\n') {
           buf_ready = 1;
         }
       }
+#endif /* ! IS_WINDOWS */
     }
 
     if (buf_ready) {
