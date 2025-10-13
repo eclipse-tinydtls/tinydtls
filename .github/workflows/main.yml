@@ -17,65 +17,71 @@ env:
 
 jobs:
   build-linux-autotools:
+    name: Build for Linux using Autotools
     runs-on: ubuntu-latest
     strategy:
       matrix:
         CC: ["gcc", "clang" ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: setup
-        run: |
-          sudo apt-get update && sudo apt-get install -y libcunit1-dev libtool libtool-bin exuberant-ctags valgrind
-          ./autogen.sh
-      - name: configure
-        run: |
-          # mkdir build-${{matrix.CC}}
-          # cd build-${{matrix.CC}}
-          $GITHUB_WORKSPACE/configure --enable-tests
-      - name: compile
-        run: |
-          # cd build-${{matrix.CC}}
-          make EXTRA_CFLAGS=-Werror
-      - name: tests
-        run: |
-          # cd build-${{matrix.CC}}
-          libtool --mode=execute valgrind --track-origins=yes --leak-check=yes --show-reachable=yes --error-exitcode=123 --quiet tests/unit-tests/testdriver
-          libtool --mode=execute valgrind --track-origins=yes --leak-check=yes --show-reachable=yes --error-exitcode=123 --quiet tests/ccm-test
-
-  build-linux-cmake:
-    name: Build for Linux using CMake
-    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build tinydtls
+    - name: checkout
+      uses: actions/checkout@v3
+    - name: setup
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: libcunit1-dev libtool libtool-bin exuberant-ctags valgrind
+        version: 1.0
+    - name: configure
       run: |
-        cmake -E make_directory build_test
-        cd build_test
-        cmake -DWARNING_TO_ERROR=ON -Dmake_tests=ON ..
-        cmake --build .
-  build-macos-cmake:
-    name: Build for macOS using CMake
-    runs-on: macos-latest
+        # mkdir build-${{matrix.CC}}
+        # cd build-${{matrix.CC}}
+        $GITHUB_WORKSPACE/autogen.sh
+        $GITHUB_WORKSPACE/configure --enable-tests
+    - name: compile
+      run: |
+        # cd build-${{matrix.CC}}
+        make EXTRA_CFLAGS=-Werror
+    - name: tests
+      run: |
+        # cd build-${{matrix.CC}}
+        libtool --mode=execute valgrind --track-origins=yes --leak-check=yes --show-reachable=yes --error-exitcode=123 --quiet tests/unit-tests/testdriver
+        libtool --mode=execute valgrind --track-origins=yes --leak-check=yes --show-reachable=yes --error-exitcode=123 --quiet tests/ccm-test
+
+  build-cmake:
+    name: Build using CMake
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - os: ubuntu-latest
+          vcpkg_triplet: x64-linux-release
+          compiler: "Unix Makefiles"
+        - os: macos-latest
+          vcpkg_triplet: arm64-osx-release
+          compiler: "Unix Makefiles"
+        - os: windows-latest
+          vcpkg_triplet: x64-windows-release
+          compiler: "Unix Makefiles"
+        - os: windows-latest
+          vcpkg_triplet: x64-windows-release
+          compiler: "Visual Studio 17 2022"
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build tinydtls
-      run: |
-        cmake -E make_directory build_test
-        cd build_test
-        cmake -DWARNING_TO_ERROR=ON -Dmake_tests=ON ..
-        cmake --build .
-
-  build-windows:
-    name: Build for Windows using CMake
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build tinydtls
-      run: |
-        cmake -E make_directory build_test
-        cd build_test
-        cmake -G "Unix Makefiles" -DWARNING_TO_ERROR=ON ..
-        cmake --build .
+    - name: checkout
+      uses: actions/checkout@v3
+    - name: vcpkg-setup
+      uses: johnwason/vcpkg-action@v7
+      id: vcpkg
+      with:
+        pkgs: cunit
+        triplet: ${{ matrix.config.vcpkg_triplet }}
+        cache-key: ${{ matrix.config.os }}
+        token: ${{ github.token }}
+    - name: configure
+      run: cmake ${{ steps.vcpkg.outputs.vcpkg-cmake-config }} -G "${{ matrix.config.compiler }}" -DWARNING_TO_ERROR=ON -Dmake_tests=ON -DENABLE_DOCS=OFF -B build_test
+    - name: compile
+      run: cmake --build build_test
+    - name: test
+      working-directory: build_test
+      run: ctest -C Debug --verbose
