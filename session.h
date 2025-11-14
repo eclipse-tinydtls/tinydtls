@@ -76,6 +76,27 @@ typedef struct {
 #undef write
 #undef read
 typedef unsigned char uint8_t;
+#if ! LWIP_IPV4
+/* members are in network byte order */
+struct sockaddr_in {
+  u8_t            sin_len;
+  sa_family_t     sin_family;
+  in_port_t       sin_port;
+  struct in_addr  sin_addr;
+#define SIN_ZERO_LEN 8
+  char            sin_zero[SIN_ZERO_LEN];
+};
+#endif /* ! LWIP_IPV4 */
+#if ! LWIP_IPV6
+struct sockaddr_in6 {
+  u8_t            sin6_len;      /* length of this structure    */
+  sa_family_t     sin6_family;   /* AF_INET6                    */
+  in_port_t       sin6_port;     /* Transport layer port #      */
+  u32_t           sin6_flowinfo; /* IPv6 flow information       */
+  struct in6_addr sin6_addr;     /* IPv6 address                */
+  u32_t           sin6_scope_id; /* Set of interfaces for scope */
+};
+#endif /* ! LWIP_IPV6 */
 
 #elif defined(IS_WINDOWS)
 #include <winsock2.h>
