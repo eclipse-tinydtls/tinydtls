@@ -670,11 +670,6 @@ dtls_set_handshake_header(uint8 type,
   return buf;
 }
 
-/**
- * A copy of default_user_parameters are passed to the get_user_parameters
- * callback provided in dtls_handler_t and may be adapted according the user's
- * requirements.
- */
 static const dtls_user_parameters_t default_user_parameters = {
   .cipher_suites =
 #ifdef DTLS_DEFAULT_CIPHER_SUITES
@@ -695,7 +690,7 @@ static const dtls_user_parameters_t default_user_parameters = {
     },
 #endif /* DTLS_DEFAULT_CIPHER_SUITES */
   .force_extended_master_secret = 1,
-  .force_renegotiation_info = 1,
+  .force_renegotiation_info = 0,
 };
 
 /** only one compression method is currently defined */
@@ -1221,6 +1216,7 @@ dtls_check_tls_extension(dtls_peer_t *peer,
   if (data_length < sizeof(uint16)) {
     /* no tls extensions specified */
     if (ecdsa) {
+      dtls_warn("not all required tls extensions found (no extensions at all)\n");
       goto error;
     }
     goto check_forced_extensions;
@@ -1231,13 +1227,17 @@ dtls_check_tls_extension(dtls_peer_t *peer,
   data += sizeof(uint16);
   data_length -= sizeof(uint16);
 
-  if (data_length < j)
+  if (data_length < j){
+    dtls_warn("tls extension length mismatch\n");
     goto error;
+  }
 
   /* check for TLS extensions needed for this cipher */
   while (data_length) {
-    if (data_length < sizeof(uint16) * 2)
+    if (data_length < sizeof(uint16) * 2) {
+      dtls_warn("tls extension length mismatch\n");
       goto error;
+    }
 
     /* get the tls extension type */
     i = dtls_uint16_to_int(data);
@@ -1249,38 +1249,46 @@ dtls_check_tls_extension(dtls_peer_t *peer,
     data += sizeof(uint16);
     data_length -= sizeof(uint16);
 
-    if (data_length < j)
+    if (data_length < j){
+      dtls_warn("tls extension data length mismatch\n");
       goto error;
+    }
 
     switch (i) {
       case TLS_EXT_ELLIPTIC_CURVES:
         ext_elliptic_curve = 1;
         if (verify_ext_eliptic_curves(data, j))
+          dtls_warn("unsupported elliptic curve found\n");
           goto error;
         break;
       case TLS_EXT_CLIENT_CERTIFICATE_TYPE:
         ext_client_cert_type = 1;
         if (is_client_hello) {
           if (verify_ext_cert_type(data, j))
+            dtls_warn("unsupported client certificate type found\n");
             goto error;
         } else {
           if (dtls_uint8_to_int(data) != TLS_CERT_TYPE_RAW_PUBLIC_KEY)
-            goto error;
+          dtls_warn("unsupported server certificate type found\n");
+          goto error;
         }
         break;
       case TLS_EXT_SERVER_CERTIFICATE_TYPE:
         ext_server_cert_type = 1;
         if (is_client_hello) {
           if (verify_ext_cert_type(data, j))
+          dtls_warn("unsupported server certificate type found\n");
             goto error;
         } else {
           if (dtls_uint8_to_int(data) != TLS_CERT_TYPE_RAW_PUBLIC_KEY)
+          dtls_warn("unsupported server certificate type found\n");
             goto error;
         }
         break;
       case TLS_EXT_EC_POINT_FORMATS:
         ext_ec_point_formats = 1;
         if (verify_ext_ec_point_formats(data, j))
+          dtls_warn("unsupported ec point format found\n");
           goto error;
         break;
       case TLS_EXT_ENCRYPT_THEN_MAC:
@@ -1294,6 +1302,7 @@ dtls_check_tls_extension(dtls_peer_t *peer,
         break;
       case TLS_EXT_SIG_HASH_ALGO:
         if (verify_ext_sig_hash_algo(data, j))
+          dtls_warn("unsupported signature_hash_algorithm found\n");
           goto error;
         break;
       case TLS_EXT_RENEGOTIATION_INFO:
@@ -1330,11 +1339,13 @@ dtls_check_tls_extension(dtls_peer_t *peer,
 check_forced_extensions:
   if (config->user_parameters.force_extended_master_secret) {
      if (!config->extended_master_secret) {
+      dtls_warn("extended master secret required but not negotiated\n");
        goto error;
      }
   }
   if (config->user_parameters.force_renegotiation_info) {
      if (!config->renegotiation_info) {
+      dtls_warn("renegotiation info required but not negotiated\n");
        goto error;
      }
   }
@@ -2470,7 +2481,7 @@ check_client_certificate_verify(dtls_context_t *ctx,
                                    result_r, result_s);
 
   if (ret < 0) {
-    dtls_alert("client certificate verify, wrong signature err: %i\n", ret);
+    dtls_alert("wrong signature err: %i\n", ret);
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
   return 0;
@@ -2606,18 +2617,6 @@ dtls_send_server_hello(dtls_context_t *ctx, dtls_peer_t *peer)
 
 #ifdef DTLS_ECC
 #define DTLS_EC_SUBJECTPUBLICKEY_SIZE (2 * DTLS_EC_KEY_SIZE + sizeof(cert_asn1_header))
-
-static int
-dtls_send_certificate_empty(dtls_context_t *ctx, dtls_peer_t *peer)
-{
-  uint8 buf[sizeof(uint24)];
-
-  /* length of this certificate */
-  dtls_int_to_uint24(buf, 0);
-
-  return dtls_send_handshake_msg(ctx, peer, DTLS_HT_CERTIFICATE,
-				 buf, sizeof(buf));
-}
 
 static int
 dtls_send_certificate_ecdsa(dtls_context_t *ctx, dtls_peer_t *peer,
@@ -3321,6 +3320,7 @@ check_server_hello(dtls_context_t *ctx,
 		      uint8 *data, size_t data_length)
 {
   dtls_handshake_parameters_t *handshake = peer->handshake_params;
+dtls_warn("check_server_hello prints\n");
 
   /*
    * Check we have enough data for the ServerHello
@@ -3330,7 +3330,7 @@ check_server_hello(dtls_context_t *ctx,
    *   1 byte null compression
    */
   if (data_length < DTLS_HS_LENGTH + 2 + DTLS_RANDOM_LENGTH + 1 + 2 + 1) {
-    dtls_alert("Insufficient length for ServerHello\n");
+    dtls_warn("Insufficient length for ServerHello\n");
     return dtls_alert_fatal_create(DTLS_ALERT_DECODE_ERROR);
   }
 
@@ -3346,7 +3346,7 @@ check_server_hello(dtls_context_t *ctx,
   data_length -= DTLS_HS_LENGTH;
 
   if (dtls_uint16_to_int(data) != DTLS_VERSION) {
-    dtls_alert("unknown DTLS version\n");
+    dtls_warn("unknown DTLS version\n");
     return dtls_alert_fatal_create(DTLS_ALERT_PROTOCOL_VERSION);
   }
 
@@ -3368,7 +3368,7 @@ check_server_hello(dtls_context_t *ctx,
    *   1 byte null compression
    */
   if (data_length < 2 + 1) {
-    dtls_alert("Insufficient length for ServerHello\n");
+    dtls_warn("Insufficient length for ServerHello\n");
     return dtls_alert_fatal_create(DTLS_ALERT_DECODE_ERROR);
   }
 
@@ -3377,7 +3377,7 @@ check_server_hello(dtls_context_t *ctx,
   handshake->cipher_index = get_cipher_index(handshake->user_parameters.cipher_suites, dtls_uint16_to_int(data));
 
   if (!known_cipher(ctx, handshake->cipher_index, 1)) {
-    dtls_alert("unsupported cipher 0x%02x 0x%02x\n", data[0], data[1]);
+    dtls_warn("unsupported cipher 0x%02x 0x%02x\n", data[0], data[1]);
     handshake->cipher_index = DTLS_CIPHER_INDEX_NULL;
     return dtls_alert_fatal_create(DTLS_ALERT_INSUFFICIENT_SECURITY);
   }
@@ -3387,7 +3387,7 @@ check_server_hello(dtls_context_t *ctx,
 
   /* Check if NULL compression was selected. We do not know any other. */
   if (dtls_uint8_to_int(data) != TLS_COMPRESSION_NULL) {
-    dtls_alert("unsupported compression method 0x%02x\n", data[0]);
+    dtls_warn("unsupported compression method 0x%02x\n", data[0]);
     return dtls_alert_fatal_create(DTLS_ALERT_INSUFFICIENT_SECURITY);
   }
   data += sizeof(uint8);
@@ -3462,7 +3462,7 @@ check_server_certificate(dtls_context_t *ctx,
 	     config->keyx.ecdsa.other_pub_y,
 	     sizeof(config->keyx.ecdsa.other_pub_x));
   if (err < 0) {
-    dtls_info("The server certificate was not accepted\n");
+    dtls_warn("The certificate was not accepted\n");
     return err;
   }
 
@@ -3500,14 +3500,14 @@ check_server_key_exchange_ecdsa(dtls_context_t *ctx,
   key_params = data;
 
   if (dtls_uint8_to_int(data) != TLS_EC_CURVE_TYPE_NAMED_CURVE) {
-    dtls_alert("only named curves supported\n");
+    dtls_alert("Only named curves supported\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
   data += sizeof(uint8);
   data_length -= sizeof(uint8);
 
   if (dtls_uint16_to_int(data) != TLS_EXT_ELLIPTIC_CURVES_SECP256R1) {
-    dtls_alert("only secp256r1 supported\n");
+    dtls_alert("secp256r1 supported\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
   data += sizeof(uint16);
@@ -3551,7 +3551,7 @@ check_server_key_exchange_ecdsa(dtls_context_t *ctx,
 			    result_r, result_s);
 
   if (ret < 0) {
-    dtls_alert("server key exchange wrong signature\n");
+    dtls_alert("wrong signature\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
   return 0;
@@ -3711,12 +3711,12 @@ check_server_hellodone(dtls_context_t *ctx,
 
     res = CALL(ctx, get_ecdsa_key, &peer->session, &ecdsa_key);
     if (res < 0) {
-      dtls_warn("no ecdsa certificate to send in certificate\n");
-      res = dtls_send_certificate_empty(ctx, peer);
-      handshake->do_client_auth = 0;
-    } else {
-      res = dtls_send_certificate_ecdsa(ctx, peer, ecdsa_key);
+      dtls_crit("no ecdsa certificate to send in certificate\n");
+      return res;
     }
+
+    res = dtls_send_certificate_ecdsa(ctx, peer, ecdsa_key);
+
     if (res < 0) {
       dtls_debug("dtls_server_hello: cannot prepare Certificate record\n");
       return res;
@@ -4491,7 +4491,7 @@ handle_alert(dtls_context_t *ctx, dtls_peer_t *peer,
 
   assert(peer);
 
-  if (data_length != 2)
+  if (data_length < 2)
     return dtls_alert_fatal_create(DTLS_ALERT_DECODE_ERROR);
 
   dtls_info("** Alert: level %d, description %d\n", data[0], data[1]);
