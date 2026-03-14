@@ -3430,6 +3430,11 @@ check_server_certificate(dtls_context_t *ctx,
   int err;
   dtls_handshake_parameters_t *config = peer->handshake_params;
 
+  if (data_length < DTLS_HS_LENGTH + DTLS_EC_SUBJECTPUBLICKEY_SIZE + sizeof(uint24)) {
+    dtls_alert("the packet length does not match the expected\n");
+    return dtls_alert_fatal_create(DTLS_ALERT_DECODE_ERROR);
+  }
+
   update_hs_hash(peer, data, data_length);
 
   assert(is_key_exchange_ecdhe_ecdsa(config->cipher_index));
