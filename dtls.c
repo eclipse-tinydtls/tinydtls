@@ -4514,8 +4514,6 @@ handle_alert(dtls_context_t *ctx, dtls_peer_t *peer,
     else
       dtls_alert("%d invalidate peer\n", data[1]);
 
-    DEL_PEER(ctx->peers, peer);
-
 #ifdef WITH_CONTIKI
 #ifndef NDEBUG
     PRINTF("removed peer [");
