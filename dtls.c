@@ -4502,10 +4502,9 @@ handle_alert(dtls_context_t *ctx, dtls_peer_t *peer,
   dtls_info("** Alert: level %d, description %d\n", data[0], data[1]);
 
   /* The peer object is invalidated for FATAL alerts and close
-   * notifies. This is done in two steps.: First, remove the object
-   * from our list of peers. After that, the event handler callback is
-   * invoked with the still existing peer object. Finally, the storage
-   * used by peer is released.
+   * notifies. The event handler callback is invoked with the peer
+   * object, then dtls_destroy_peer() removes the peer from the
+   * hash table and releases the storage.
    */
   close_notify = data[1] == DTLS_ALERT_CLOSE_NOTIFY;
   if (data[0] == DTLS_ALERT_LEVEL_FATAL || close_notify) {
@@ -4513,8 +4512,6 @@ handle_alert(dtls_context_t *ctx, dtls_peer_t *peer,
       dtls_info("invalidate peer (Close Notify)\n");
     else
       dtls_alert("%d invalidate peer\n", data[1]);
-
-    DEL_PEER(ctx->peers, peer);
 
 #ifdef WITH_CONTIKI
 #ifndef NDEBUG
