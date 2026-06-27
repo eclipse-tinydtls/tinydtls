@@ -4373,7 +4373,7 @@ handle_handshake(dtls_context_t *ctx, dtls_peer_t *peer, uint8 *data, size_t dat
 
     /* TODO: only add packet that are not too new. */
     if (data_length > DTLS_MAX_BUF) {
-      dtls_warn("the packet is too big to buffer for reoder\n");
+      dtls_warn("the packet is too big to buffer for reorder\n");
       return 0;
     }
 
