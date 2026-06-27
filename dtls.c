@@ -1130,17 +1130,18 @@ verify_ext_eliptic_curves(uint8 *data, size_t data_length) {
 }
 
 static int verify_ext_cert_type(uint8 *data, size_t data_length) {
-  int i, cert_type;
+  uint8_t i, cert_type;
+
+  GET_VAR_FIELD(i, data, data_length, uint8, DTLS_ALERT_HANDSHAKE_FAILURE,
+                  "certificate types, length exceeds data");
 
   /* length of cert type list */
-  i = dtls_uint8_to_int(data);
-  data += sizeof(uint8);
-  if (i + sizeof(uint8) != data_length) {
+  if (i != data_length) {
     dtls_warn("the list of the supported certificate types should be tls extension length - 1\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
 
-  for (i = data_length - sizeof(uint8); i > 0; i -= sizeof(uint8)) {
+  for (; i > 0; i -= sizeof(uint8)) {
     /* check if this cert type is supported */
     cert_type = dtls_uint8_to_int(data);
     data += sizeof(uint8);
@@ -1265,7 +1266,7 @@ dtls_check_tls_extension(dtls_peer_t *peer,
           if (verify_ext_cert_type(data, j))
             goto error;
         } else {
-          if (dtls_uint8_to_int(data) != TLS_CERT_TYPE_RAW_PUBLIC_KEY)
+          if (j < sizeof(uint8) || dtls_uint8_to_int(data) != TLS_CERT_TYPE_RAW_PUBLIC_KEY)
             goto error;
         }
         break;
@@ -1275,7 +1276,7 @@ dtls_check_tls_extension(dtls_peer_t *peer,
           if (verify_ext_cert_type(data, j))
             goto error;
         } else {
-          if (dtls_uint8_to_int(data) != TLS_CERT_TYPE_RAW_PUBLIC_KEY)
+          if (j < sizeof(uint8) || dtls_uint8_to_int(data) != TLS_CERT_TYPE_RAW_PUBLIC_KEY)
             goto error;
         }
         break;
