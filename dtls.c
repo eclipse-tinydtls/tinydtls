@@ -1774,6 +1774,10 @@ dtls_prepare_record(dtls_peer_t *peer, dtls_security_parameters_t *security,
    	            } CCMNonceExample;
     */
 
+    if (*rlen < DTLS_RH_LENGTH + 8) {
+      dtls_debug("dtls_prepare_record: send buffer too small\n");
+      return dtls_alert_fatal_create(DTLS_ALERT_INTERNAL_ERROR);
+    }
     memcpy(p, &DTLS_RECORD_HEADER(sendbuf)->epoch, 8);
     p += 8;
     res = 8;
@@ -1807,6 +1811,11 @@ dtls_prepare_record(dtls_peer_t *peer, dtls_security_parameters_t *security,
     memcpy(A_DATA, &DTLS_RECORD_HEADER(sendbuf)->epoch, 8); /* epoch and seq_num */
     memcpy(A_DATA + 8,  &DTLS_RECORD_HEADER(sendbuf)->content_type, 3); /* type and version */
     dtls_int_to_uint16(A_DATA + 11, res - 8); /* length */
+
+    if (*rlen < res + DTLS_RH_LENGTH + mac_len) {
+      dtls_debug("dtls_prepare_record: send buffer too small\n");
+      return dtls_alert_fatal_create(DTLS_ALERT_INTERNAL_ERROR);
+    }
 
     res = dtls_encrypt_params(&params, start + 8, res - 8, start + 8,
                dtls_kb_local_write_key(security, peer->role),
