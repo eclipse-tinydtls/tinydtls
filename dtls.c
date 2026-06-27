@@ -1180,17 +1180,19 @@ static int verify_ext_ec_point_formats(uint8 *data, size_t data_length) {
 }
 
 static int verify_ext_sig_hash_algo(uint8 *data, size_t data_length) {
-  int i, hash_type, sig_type;
+  uint16_t i;
+  uint8_t hash_type, sig_type;
+
+  GET_VAR_FIELD(i, data, data_length, uint16, DTLS_ALERT_HANDSHAKE_FAILURE,
+                  "sig_hash_algorithms, length exceeds data");
 
   /* length of sig_hash_algo list */
-  i = dtls_uint16_to_int(data);
-  data += sizeof(uint16);
-  if (i + sizeof(uint16) != data_length) {
+  if (i != data_length) {
     dtls_warn("the list of the supported signature_algorithms should be tls extension length - 2\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
 
-  for (i = data_length - sizeof(uint16); i > 0; i -= sizeof(uint16)) {
+  for (; i > 0; i -= sizeof(uint16)) {
     /* check if this _sig_hash_algo is supported */
     hash_type = dtls_uint8_to_int(data);
     data += sizeof(uint8);
