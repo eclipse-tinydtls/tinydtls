@@ -1105,17 +1105,18 @@ calculate_key_block(dtls_context_t *ctx,
  * searches for a specific key */
 static int
 verify_ext_eliptic_curves(uint8 *data, size_t data_length) {
-  int i, curve_name;
+  uint16_t i, curve_name;
+
+  GET_VAR_FIELD(i, data, data_length, uint16, DTLS_ALERT_HANDSHAKE_FAILURE,
+                  "elliptic curves, length exceeds data");
 
   /* length of curve list */
-  i = dtls_uint16_to_int(data);
-  data += sizeof(uint16);
-  if (i + sizeof(uint16) != data_length) {
+  if (i != data_length) {
     dtls_warn("the list of the supported elliptic curves should be tls extension length - 2\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
 
-  for (i = data_length - sizeof(uint16); i > 0; i -= sizeof(uint16)) {
+  for (; i > 0; i -= sizeof(uint16)) {
     /* check if this curve is supported */
     curve_name = dtls_uint16_to_int(data);
     data += sizeof(uint16);
