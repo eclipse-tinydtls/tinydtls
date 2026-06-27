@@ -1155,17 +1155,18 @@ static int verify_ext_cert_type(uint8 *data, size_t data_length) {
 }
 
 static int verify_ext_ec_point_formats(uint8 *data, size_t data_length) {
-  int i, cert_type;
+  uint8_t i, cert_type;
+
+  GET_VAR_FIELD(i, data, data_length, uint8, DTLS_ALERT_HANDSHAKE_FAILURE,
+                  "ec_point_formats, length exceeds data");
 
   /* length of ec_point_formats list */
-  i = dtls_uint8_to_int(data);
-  data += sizeof(uint8);
-  if (i + sizeof(uint8) != data_length) {
+  if (i != data_length) {
     dtls_warn("the list of the supported ec_point_formats should be tls extension length - 1\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
 
-  for (i = data_length - sizeof(uint8); i > 0; i -= sizeof(uint8)) {
+  for (; i > 0; i -= sizeof(uint8)) {
     /* check if this ec_point_format is supported */
     cert_type = dtls_uint8_to_int(data);
     data += sizeof(uint8);
