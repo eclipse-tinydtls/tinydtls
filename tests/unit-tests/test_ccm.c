@@ -20,8 +20,6 @@
 #include "crypto.h"
 #include "../ccm-testdata.c"
 
-#include <stdio.h>
-
 static uint8_t buf[1024];
 
 static void

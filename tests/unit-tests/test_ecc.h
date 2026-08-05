@@ -10,6 +10,6 @@
  * http://www.eclipse.org/org/documents/edl-v10.php.
  */
 
-#include <CUnit/CUnit.h>
+#include "testdriver.h"
 
 CU_pSuite t_init_ecc_tests(void);

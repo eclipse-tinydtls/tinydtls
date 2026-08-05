@@ -19,8 +19,6 @@
 #include "tinydtls.h"
 #include "crypto.h"
 
-#include <stdio.h>
-
 /* Check against SHA256 test vector from
  * https://mailarchive.ietf.org/arch/msg/tls/fzVCzk-z3FShgGJ6DOXqM1ydxms/
  */

@@ -10,8 +10,6 @@
  * http://www.eclipse.org/org/documents/edl-v10.php.
  */
 
-#include <assert.h>
-
 #include "dtls_config.h"
 #include "dtls_prng.h"
 #include "test_ecc.h"
@@ -19,8 +17,6 @@
 
 #include "tinydtls.h"
 #include "crypto.h"
-
-#include <stdio.h>
 
 //These are testvalues taken from the NIST P-256 definition
 //6b17d1f2 e12c4247 f8bce6e5 63a440f2 77037d81 2deb33a0 f4a13945 d898c296
@@ -157,20 +153,20 @@ t_test_ecc_ecdsa(void) {
   ecc_ec_mult(BasePointx, BasePointy, ecdsaTestSecret, pub_x, pub_y);
 
   ret = ecc_ecdsa_sign(ecdsaTestSecret, ecdsaTestMessage, ecdsaTestRand1, tempx, tempy);
-  assert(ecc_isSame(tempx, ecdsaTestresultR1, arrayLength));
-  assert(ecc_isSame(tempy, ecdsaTestresultS1, arrayLength));
-  assert(ret == 0);
+  CU_ASSERT(ecc_isSame(tempx, ecdsaTestresultR1, arrayLength));
+  CU_ASSERT(ecc_isSame(tempy, ecdsaTestresultS1, arrayLength));
+  CU_ASSERT(ret == 0);
 
   ret = ecc_ecdsa_validate(pub_x, pub_y, ecdsaTestMessage, tempx, tempy);
-  assert(ret == 0);
+  CU_ASSERT(ret == 0);
 
   ret = ecc_ecdsa_sign(ecdsaTestSecret, ecdsaTestMessage, ecdsaTestRand2, tempx, tempy);
-  assert(ecc_isSame(tempx, ecdsaTestresultR2, arrayLength));
-  assert(ecc_isSame(tempy, ecdsaTestresultS2, arrayLength));
-  assert(ret == 0);
+  CU_ASSERT(ecc_isSame(tempx, ecdsaTestresultR2, arrayLength));
+  CU_ASSERT(ecc_isSame(tempy, ecdsaTestresultS2, arrayLength));
+  CU_ASSERT(ret == 0);
 
   ret = ecc_ecdsa_validate(pub_x, pub_y, ecdsaTestMessage, tempx, tempy);
-  assert(ret == 0);
+  CU_ASSERT(ret == 0);
 }
 
 static void

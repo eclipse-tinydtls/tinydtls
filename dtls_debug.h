@@ -100,13 +100,13 @@ void dtls_set_log_handler(dtls_log_handler_t app_handler);
  * Writes the given text to \c stdout. The text is output only when \p
  * level is below or equal to the log level that set by
  * set_log_level(). */
-#ifdef HAVE_VPRINTF
+#if !defined(WITH_CONTIKI)
 #if (defined(__GNUC__) && !defined(__MINGW32__))
 void dsrv_log(log_t level, const char *format, ...) __attribute__ ((format(printf, 2, 3)));
 #else /* !__GNUC__ && !__MINGW32__ */
 void dsrv_log(log_t level, const char *format, ...);
 #endif /* !__GNUC__ && !__MINGW32__ */
-#else
+#elif defined(HAVE_VPRINTF)
 #define dsrv_log(level, format, ...) PRINTF(format, ##__VA_ARGS__)
 #endif
 
@@ -129,8 +129,8 @@ void dtls_dsrv_log_addr(log_t level, const char *name, const session_t *addr);
 #define dtls_notice(...) LOG_INF(__VA_ARGS__)
 #define dtls_info(...) LOG_INF(__VA_ARGS__)
 #define dtls_debug(...) LOG_DBG(__VA_ARGS__)
-#define dtls_debug_hexdump(name, buf, length) { LOG_DBG("%s (%zu bytes):", name, (size_t)(length)); LOG_HEXDUMP_DBG(buf, length, name); }
-#define dtls_debug_dump(name, buf, length) { LOG_DBG("%s (%zu bytes):", name, (size_t)(length)); LOG_HEXDUMP_DBG(buf, length, name); }
+#define dtls_debug_hexdump(name, buf, length) { LOG_DBG("%s (%u bytes):", name, (unsigned)(length)); LOG_HEXDUMP_DBG(buf, length, name); }
+#define dtls_debug_dump(name, buf, length) { LOG_DBG("%s (%u bytes):", name, (unsigned)(length)); LOG_HEXDUMP_DBG(buf, length, name); }
 #elif defined(RIOT_VERSION)
 #define dtls_emerg(...) LOG_ERROR(__VA_ARGS__)
 #define dtls_alert(...) LOG_ERROR(__VA_ARGS__)
@@ -139,8 +139,8 @@ void dtls_dsrv_log_addr(log_t level, const char *name, const session_t *addr);
 #define dtls_notice(...) LOG_INFO(__VA_ARGS__)
 #define dtls_info(...) LOG_INFO(__VA_ARGS__)
 #define dtls_debug(...) LOG_DEBUG(__VA_ARGS__)
-#define dtls_debug_hexdump(name, buf, length) { if (LOG_DEBUG <= LOG_LEVEL) { LOG_DEBUG("-= %s (%zu bytes) =-\n", name, (size_t)(length)); od_hex_dump(buf, length, 0); }}
-#define dtls_debug_dump(name, buf, length) { if (LOG_DEBUG <= LOG_LEVEL) { LOG_DEBUG("%s (%zu bytes):", name, (size_t)(length)); od_hex_dump(buf, length, 0); }}
+#define dtls_debug_hexdump(name, buf, length) { if (LOG_DEBUG <= LOG_LEVEL) { LOG_DEBUG("-= %s (%u bytes) =-\n", name, (unsigned)(length)); od_hex_dump(buf, length, 0); }}
+#define dtls_debug_dump(name, buf, length) { if (LOG_DEBUG <= LOG_LEVEL) { LOG_DEBUG("%s (%u bytes):", name, (unsigned)(length)); od_hex_dump(buf, length, 0); }}
 #else /* neither RIOT nor Zephyr */
 #define dtls_emerg(...) dsrv_log(DTLS_LOG_EMERG, __VA_ARGS__)
 #define dtls_alert(...) dsrv_log(DTLS_LOG_ALERT, __VA_ARGS__)
