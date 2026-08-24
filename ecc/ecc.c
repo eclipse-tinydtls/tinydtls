@@ -625,6 +625,16 @@ int ecc_ecdsa_validate(const uint32_t *x, const uint32_t *y, const uint32_t *e, 
 	if (isZero(r) || isZero(s))
 		return -1;
 
+	/* r and s must be in [1, n-1]; otherwise fieldInv(s) below can loop
+	 * forever when s is a multiple of the order n (e.g. s == n). sub()
+	 * returns borrow == 1 iff the value is < n. */
+	{
+		uint32_t tmp_cmp[8];
+		if (sub(r, ecc_order_m, tmp_cmp, arrayLength) == 0 ||
+		    sub(s, ecc_order_m, tmp_cmp, arrayLength) == 0)
+			return -1;
+	}
+
 	// 3. Calculate w = s^{-1} \pmod{n}
 	fieldInv(s, ecc_order_m, ecc_order_r, w);
 
