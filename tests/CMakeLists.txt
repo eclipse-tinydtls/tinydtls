@@ -19,9 +19,9 @@
 #
 ###############################################################################
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
-project(tinydtls-tests)
+project(tinydtls-tests  LANGUAGES C )
 
 add_executable(dtls-server dtls-server.c dtls_ciphers_util.c)
 target_link_libraries(dtls-server LINK_PUBLIC tinydtls)
