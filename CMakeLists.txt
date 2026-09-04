@@ -21,7 +21,7 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(tinydtls)
+project(tinydtls LANGUAGES C )
 
 include (AutoConf.cmake)
 
