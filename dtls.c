@@ -4377,14 +4377,22 @@ handle_handshake(dtls_context_t *ctx, dtls_peer_t *peer, uint8 *data, size_t dat
       return 0;
     }
 
+    size_t buffered_length = data_length;
     netq_t *node = netq_head(&peer->handshake_params->reorder_queue);
     while (node) {
       dtls_handshake_header_t *node_header = DTLS_HANDSHAKE_HEADER(node->data);
-      if (dtls_uint16_to_int(node_header->message_seq) == mseq) {
+      uint16_t hmseq = dtls_uint16_to_int(node_header->message_seq);
+      if (hmseq == mseq) {
         dtls_warn("a packet with this sequence number is already stored\n");
         return 0;
       }
+      buffered_length += node->length;
       node = netq_next(node);
+    }
+
+    if (buffered_length > DTLS_MAX_REORDER_BUF) {
+        dtls_warn("the packet exceeds the maximum reorder buffer size\n");
+        return 0;
     }
 
     n = netq_node_new(data_length);

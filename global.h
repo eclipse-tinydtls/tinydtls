@@ -57,6 +57,15 @@ typedef unsigned char uint48[6];
 #endif /* WITH_CONTIKI || RIOT_VERSION */
 #endif
 
+#ifndef DTLS_MAX_REORDER_BUF
+/**
+ * Limit size of reordered handshake messages.
+ * Using RPK the largest server flight has about 450 bytes
+ * and the largest server flight has about 400 bytes
+ */
+#define DTLS_MAX_REORDER_BUF 512
+#endif
+
 /*
  * DTLS send buf is alloctaed on the stack by default
  */
