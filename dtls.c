@@ -4403,6 +4403,7 @@ handle_handshake(dtls_context_t *ctx, dtls_peer_t *peer, uint8 *data, size_t dat
 
     n->peer = peer;
     n->length = data_length;
+    n->t = mseq; /* use handshake message sequence number for time to sort */
     memcpy(n->data, data, data_length);
 
     if (!netq_insert_node(&peer->handshake_params->reorder_queue, n)) {
@@ -4413,35 +4414,21 @@ handle_handshake(dtls_context_t *ctx, dtls_peer_t *peer, uint8 *data, size_t dat
     return 0;
   } else if (mseq == peer->handshake_params->hs_state.mseq_r) {
     /* Found the expected packet, use this and all the buffered packet */
-    int next = 1;
-
+    netq_t *node =NULL;
     res = handle_handshake_msg(ctx, peer, data, data_length);
-    if (res < 0)
-      return res;
+    while (res >= 0 && peer->handshake_params &&
+           (node = netq_head(&peer->handshake_params->reorder_queue))) {
+      dtls_handshake_header_t *node_header = DTLS_HANDSHAKE_HEADER(node->data);
 
-    /* We do not know in which order the packet are in the list just search the list for every packet. */
-    while (next && peer->handshake_params) {
-      next = 0;
-      netq_t *node = netq_head(&peer->handshake_params->reorder_queue);
-      while (node) {
-        dtls_handshake_header_t *node_header = DTLS_HANDSHAKE_HEADER(node->data);
+      /* Using netq_t.time for the handshake message sequence number */
+      if (dtls_uint16_to_int(node_header->message_seq) == peer->handshake_params->hs_state.mseq_r) {
+        netq_remove(&peer->handshake_params->reorder_queue, node);
+        res = handle_handshake_msg(ctx, peer, node->data, node->length);
 
-        if (dtls_uint16_to_int(node_header->message_seq) == peer->handshake_params->hs_state.mseq_r) {
-          netq_remove(&peer->handshake_params->reorder_queue, node);
-          next = 1;
-          res = handle_handshake_msg(ctx, peer, node->data, node->length);
-
-          /* free message data */
-          netq_node_free(node);
-
-          if (res < 0) {
-            return res;
-          }
-
-          break;
-        } else {
-          node = netq_next(node);
-        }
+        /* free message data */
+        netq_node_free(node);
+      } else {
+        break;
       }
     }
     return res;
