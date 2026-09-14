@@ -310,28 +310,25 @@ resolve_address(const char *server, struct sockaddr *dst) {
 
   struct addrinfo *res, *ainfo;
   struct addrinfo hints;
-  static char addrstr[256];
-  int error, result;
+  int result;
 
-  memset(addrstr, 0, sizeof(addrstr));
-  if (server && strlen(server) > 0)
-    memcpy(addrstr, server, strlen(server));
-  else
-    memcpy(addrstr, "localhost", 9);
+  if (!server || strlen(server) == 0) {
+    dtls_emerg("missing address to resolve\n");
+    return -1;
+  }
 
   memset ((char *)&hints, 0, sizeof(hints));
   hints.ai_socktype = SOCK_DGRAM;
   hints.ai_family = AF_UNSPEC;
 
-  error = getaddrinfo(addrstr, NULL, &hints, &res);
+  result = getaddrinfo(server, NULL, &hints, &res);
 
-  if (error != 0) {
-    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(error));
-    return error;
+  if (result != 0) {
+    dtls_emerg("getaddrinfo: %s\n", gai_strerror(result));
+    return result;
   }
 
-  result = -1;
-  for (ainfo = res; (result == -1) && (ainfo != NULL); ainfo = ainfo->ai_next) {
+  for (ainfo = res; ainfo != NULL; ainfo = ainfo->ai_next) {
 
     switch (ainfo->ai_family) {
     case AF_INET6:
@@ -346,6 +343,12 @@ resolve_address(const char *server, struct sockaddr *dst) {
   }
 
   freeaddrinfo(res);
+
+  if (result == 0) {
+    dtls_emerg("failed to resolve address\n");
+    return -1;
+  }
+
   return result;
 }
 
@@ -419,7 +422,8 @@ main(int argc, char **argv) {
   int fd;
   ssize_t result;
   int on = 1;
-  int opt, res;
+  int opt = 0;
+  int res;
   session_t dst;
   session_t listen;
   char buf[200];
@@ -438,8 +442,7 @@ main(int argc, char **argv) {
   memcpy(psk_key, PSK_DEFAULT_KEY, psk_key_length);
 #endif /* DTLS_PSK */
 
-  while (optind < argc) {
-    opt = getopt(argc, argv, "c:eo:p:rv:z" PSK_OPTIONS);
+  while ((opt = getopt(argc, argv, "c:eo:p:rv:z" PSK_OPTIONS)) > -1) {
     switch (opt) {
 #ifdef DTLS_PSK
     case 'i' :
@@ -486,29 +489,29 @@ main(int argc, char **argv) {
     case 'v' :
       log_level = strtol(optarg, NULL, 10);
       break;
-    case -1 :
-      /* handle arguments */
-      if (!dst.size) {
-        /* first argument: destination address */
-        /* resolve destination address of server where data should be sent */
-        res = resolve_address(argv[optind++], &dst.addr.sa);
-        if (res < 0) {
-          dtls_emerg("failed to resolve address\n");
-          exit(-1);
-        }
-        dst.size = res;
-      } else if (!dst_port) {
-        /* second argument: destination port (optional) */
-        dst_port = atoi(argv[optind++]);
-      } else {
+    default:
+      usage(argv[0], dtls_package_version());
+      exit(1);
+    }
+  }
+
+  /* handle arguments */
+  if (optind < argc) {
+    /* first argument: destination address */
+    /* resolve destination address of server where data should be sent */
+    res = resolve_address(argv[optind++], &dst.addr.sa);
+    if (res < 0) {
+      exit(-1);
+    }
+    dst.size = res;
+    if (optind < argc) {
+      /* second argument: destination port (optional) */
+      dst_port = atoi(argv[optind++]);
+      if (optind < argc) {
         dtls_warn("too many arguments!\n");
         usage(argv[0], dtls_package_version());
         exit(1);
       }
-      break;
-    default:
-      usage(argv[0], dtls_package_version());
-      exit(1);
     }
   }
 
@@ -604,7 +607,7 @@ main(int argc, char **argv) {
     FD_SET(fd, &rfds);
     /* FD_SET(fd, &wfds); */
 
-    timeout.tv_sec = 5;
+    timeout.tv_sec = 3;
     timeout.tv_usec = 0;
 
     result = select(fd+1, &rfds, &wfds, 0, &timeout);
@@ -615,6 +618,7 @@ main(int argc, char **argv) {
         perror("select");
     } else if (result == 0) {
       /* timeout */
+      dtls_check_retransmit(dtls_context, NULL);
     } else {
       /* ok */
       if (FD_ISSET(fd, &wfds))
