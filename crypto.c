@@ -458,7 +458,9 @@ int dtls_ecdh_pre_master_secret(unsigned char *priv_key,
   dtls_ec_key_from_uint32(result_x, key_size, result);
   return key_size;
 }
-
+#ifdef USE_PSA
+#include "platform-specific/dtls_ecdsa_psa.c"
+#else /* USE_PSA */
 void
 dtls_ecdsa_generate_key(unsigned char *priv_key,
 			unsigned char *pub_key_x,
@@ -556,6 +558,7 @@ dtls_ecdsa_verify_sig(const unsigned char *pub_key_x,
   return dtls_ecdsa_verify_sig_hash(pub_key_x, pub_key_y, key_size, sha256hash,
 				    sizeof(sha256hash), result_r, result_s);
 }
+#endif /* USE_PSA */
 #endif /* DTLS_ECC */
 
 int
