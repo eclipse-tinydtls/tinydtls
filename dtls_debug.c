@@ -112,6 +112,7 @@ print_timestamp(char *s, size_t len, clock_time_t t) {
 
 #endif /* HAVE_TIME_H */
 
+#ifdef HAVE_INET_NTOP
 /**
  * A length-safe strlen() fake.
  *
@@ -127,6 +128,7 @@ dtls_strnlen(const char *s, size_t maxlen) {
     ++n;
   return n;
 }
+#endif /* HAVE_INET_NTOP */
 
 /**
  * Write service-address as text to buffer.

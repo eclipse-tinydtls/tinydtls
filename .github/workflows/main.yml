@@ -79,3 +79,40 @@ jobs:
         cd build_test
         cmake -G "Unix Makefiles" -DWARNING_TO_ERROR=ON ..
         cmake --build .
+
+  mingw-cmake:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        OS: ["UCRT64", "CLANG64"]
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Environment Setup
+        shell: bash
+        run: |
+          if [ "${{matrix.OS}}" = "UCRT64" ]; then
+            mingw_var="ucrt-x86_64"
+          elif [ "${{matrix.OS}}" = "CLANG64" ]; then
+            mingw_var="clang-x86_64"
+          else
+            echo "Unsupported MinGW variant: ${{matrix.OS}}"
+            mingw_var=""
+          fi
+          echo "MINGW_VARIANT=${mingw_var}" >> $GITHUB_ENV
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{matrix.OS}}
+          update: true
+          install: git mingw-w64-${{env.MINGW_VARIANT}}-gcc mingw-w64-${{env.MINGW_VARIANT}}-cmake mingw-w64-${{env.MINGW_VARIANT}}-openssl
+      - name: MinGW ${{matrix.OS}} build
+        run: |
+          echo 'Running in MSYS2 ${{matrix.OS}}!'
+          cmake -E remove_directory build
+          cmake -E make_directory build
+          cd build
+          cmake .. -DWARNING_TO_ERROR=ON
+          cmake --build .
+          cmake --build . -- install
