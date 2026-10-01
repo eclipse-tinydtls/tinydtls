@@ -1115,6 +1115,10 @@ verify_ext_eliptic_curves(uint8 *data, size_t data_length) {
     dtls_warn("the list of the supported elliptic curves should be tls extension length - 2\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
+  if (i & 1) {
+    dtls_warn("the length of the supported elliptic curves must be even\n");
+    return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
+  }
 
   for (; i > 0; i -= sizeof(uint16)) {
     /* check if this curve is supported */
@@ -1189,6 +1193,10 @@ static int verify_ext_sig_hash_algo(uint8 *data, size_t data_length) {
   /* length of sig_hash_algo list */
   if (i != data_length) {
     dtls_warn("the list of the supported signature_algorithms should be tls extension length - 2\n");
+    return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
+  }
+  if (i & 1) {
+    dtls_warn("the length of the supported signature_algorithms must be even\n");
     return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
   }
 
