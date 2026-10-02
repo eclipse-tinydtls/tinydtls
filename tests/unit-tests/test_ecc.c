@@ -184,6 +184,7 @@ t_test_ecc_ecdsa0(void) {
   ecc_ec_mult(BasePointx, BasePointy, ecdsaTestSecret, pub_x, pub_y);
 
   ret = ecc_ecdsa_sign(ecdsaTestSecret, ecdsaTestMessage, ecdsaTestRand1, tempx, tempy);
+  CU_ASSERT(ret == 0);
   
   memset(tempy, 0, sizeof(tempy));
   ret = ecc_ecdsa_validate(pub_x, pub_y, ecdsaTestMessage, tempx, tempy);
