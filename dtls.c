@@ -437,6 +437,8 @@ dtls_write(struct dtls_context_t *ctx, session_t *session,
 
 static int
 dtls_get_cookie(uint8 *msg, size_t msglen, uint8 **cookie) {
+  uint8_t cookie_length = 0;
+
   /* To access the cookie, we have to determine the session id's
    * length and skip the whole thing. */
   if (msglen < DTLS_HS_LENGTH + DTLS_CH_LENGTH + sizeof(uint8))
@@ -452,11 +454,11 @@ dtls_get_cookie(uint8 *msg, size_t msglen, uint8 **cookie) {
   SKIP_VAR_FIELD(msg, msglen, uint8, DTLS_ALERT_HANDSHAKE_FAILURE,
                  "get_cookie, session_id");
 
-  if (msglen < (*msg & 0xff) + sizeof(uint8))
-    return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
-
-  *cookie = msg + sizeof(uint8);
-  return dtls_uint8_to_int(msg);
+  /* get cookie field */
+  GET_VAR_FIELD(cookie_length, msg, msglen, uint8, DTLS_ALERT_HANDSHAKE_FAILURE,
+          "get_cookie, cookie")
+  *cookie = msg;
+  return cookie_length;
 }
 
 static int
