@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 #
-# Copyright (c) 2011-2021 Olaf Bergmann (TZI) and others.
+# Copyright (c) 2011-2026 Olaf Bergmann (TZI) and others.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
 # and Eclipse Distribution License v. 1.0 which accompanies this distribution.
@@ -30,6 +30,7 @@ test -e install-sh || touch install-sh
 AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_RANLIB
+AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR], [AR=ar])
 
 AC_C_BIGENDIAN
@@ -107,6 +108,25 @@ AC_ARG_ENABLE(shared,
 if test "$enable_shared" = "yes" ; then
   ENABLE_SHARED=1
 fi
+
+AC_ARG_ENABLE([sanitize],
+              [AS_HELP_STRING([--enable-sanitize],
+                              [Enable building with sanitize=address,undefined coverage support [default=no]])],
+              [build_sanitize="$enableval"],
+              [build_sanitize="no"])
+
+SAN_CFLAGS=
+SAN_LIBS=
+if test "x$build_sanitize" = "xyes"; then
+   AX_CHECK_COMPILE_FLAG([-fsanitize=address,undefined], [SAN_CFLAGS="-fsanitize=address,undefined"])
+   SAN_LIBS="$SAN_CFLAGS"
+   AX_CHECK_COMPILE_FLAG([-fno-omit-frame-pointer], [SAN_CFLAGS="$SAN_CFLAGS -fno-omit-frame-pointer"])
+   AX_CHECK_COMPILE_FLAG([-fsanitize-address-use-after-scope], [SAN_CFLAGS="$SAN_CFLAGS -fsanitize-address-use-after-scope"])
+   CFLAGS="$CFLAGS $SAN_CFLAGS"
+fi
+
+AC_SUBST(SAN_CFLAGS)
+AC_SUBST(SAN_LIBS)
 
 CPPFLAGS="${CPPFLAGS} -DDTLSv12 -DWITH_SHA256"
 OPT_OBJS="${OPT_OBJS} sha2/sha2.o"

@@ -1,6 +1,6 @@
 ###############################################################################
 #
-#  Copyright (c) 2022 Contributors to the Eclipse Foundation
+#  Copyright (c) 2022-2026 Contributors to the Eclipse Foundation
 #
 #  See the LICENSE file(s) distributed with this work for additional
 #  information regarding copyright ownership.
@@ -50,9 +50,33 @@ else()
    # provided by zephyr/CMakeLists.txt and zephyr/Kconfig
 endif()
 
+if(ENABLE_SANITIZER)
+  if(MSVC)
+    add_compile_options(/fsanitize=address,undefined)
+    add_link_options(/fsanitize=address,undefined)
+    set(SAN_CFLAGS "/fsanitize=address,undefined")
+    set(SAN_LIBS "/fsanitize=address,undefined")
+  else()
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer -fsanitize-address-use-after-scope)
+    add_link_options(-fsanitize=address,undefined)
+    set(SAN_CFLAGS "-fsanitize=address,undefined -fno-omit-frame-pointer -fsanitize-address-use-after-scope")
+    set(SAN_LIBS "-fsanitize=address,undefined")
+  endif()
+  message(STATUS "AddressSanitizer (ASan) and UndefinedBehaviorSanitizer (UBSan) enabled")
+endif()
+
 option(WARNING_TO_ERROR "force all compiler warnings to be errors" OFF)
 
 configure_file(dtls_config.h.cmake.in dtls_config.h )
+
+# Build the tinydtls.pc file
+set(prefix ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix "\${prefix}")
+set(libdir "\${prefix}/lib")
+set(includedir "\${prefix}/include")
+
+configure_file(${CMAKE_CURRENT_LIST_DIR}/tinydtls.pc.in
+               ${CMAKE_CURRENT_BINARY_DIR}/tinydtls.pc @ONLY)
 
 add_library(tinydtls)
 

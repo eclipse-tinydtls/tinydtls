@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 				   data[n].msg, data[n].la);
     
     len +=  + data[n].la;
-    printf("Packet Vector #%lu ", n+1);
+    printf("Packet Vector #%zu ", n+1);
     if ((size_t)len != data[n].r_lm || memcmp(data[n].msg, data[n].result, len))
       printf("FAILED, ");
     else 
@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
 				   data[n].msg, data[n].la);
     
     if (len < 0)
-      printf("Packet Vector #%lu: cannot decrypt message\n", n+1);
+      printf("Packet Vector #%zu: cannot decrypt message\n", n+1);
     else 
       printf("\t*** MAC verified (total length = %lu) ***\n", len + data[n].la);
   }
