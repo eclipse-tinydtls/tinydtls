@@ -2151,7 +2151,7 @@ return_unlock:
   return res <= 0 ? res : (int)(overall_len - (len - (unsigned int)res));
 }
 
-static inline int
+static int
 dtls_send_alert(dtls_context_t *ctx, dtls_peer_t *peer, dtls_alert_level_t level,
 		dtls_alert_t description) {
   uint8_t msg[] = { level, description };
