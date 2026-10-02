@@ -96,18 +96,18 @@ dtls_session_init(session_t *sess) {
   sess->size = sizeof(sess->addr);
 }
 
-/* These functions are primarly needed for the tinydtls ruby gem.
+/* These functions are primarily needed for the tinydtls ruby gem.
  *
  * They are not implemented on Contiki and RIOT because these operating
  * system don't supply malloc(3). This could be fixed by fixed by using
  * memory pools on these operating system as in `peer.c`. However, the
  * downside of this approach is that the memory pools reserve memory
  * even if the `dtls_new_session` isn't used and usually memory for the
- * `session_t` type is already resevered in the `peer_t` struct.
+ * `session_t` type is already reserved in the `peer_t` struct.
  * Therefore it would introduces quite some overhead on these
  * constrained platforms.
  *
- * In the long run we probably want to create two seperate memory pools
+ * In the long run we probably want to create two separate memory pools
  * for sessions and peers and store a pointer to a session in the peer
  * struct.
  */

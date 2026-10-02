@@ -1616,7 +1616,7 @@ check_finished(dtls_context_t *ctx, dtls_peer_t *peer,
 
   /* Use a union here to ensure that sufficient stack space is
    * reserved. As statebuf and verify_data are not used at the same
-   * time, we can re-use the storage safely.
+   * time, we can reuse the storage safely.
    */
   union {
     unsigned char statebuf[DTLS_HASH_CTX_SIZE];
@@ -1666,7 +1666,7 @@ check_finished(dtls_context_t *ctx, dtls_peer_t *peer,
  * as well (usually \c dtls_kb_digest_size(CURRENT_CONFIG(peer)).
  *
  * \param peer            The remote peer the packet will be sent to.
- * \param security        The encryption paramater used to encrypt
+ * \param security        The encryption parameter used to encrypt
  * \param type            The content type of this record.
  * \param data_array      Array with payloads in correct order.
  * \param data_len_array  Sizes of the payloads in correct order.
@@ -1816,7 +1816,7 @@ dtls_prepare_record(dtls_peer_t *peer, dtls_security_parameters_t *security,
     dtls_debug_dump("key:", dtls_kb_local_write_key(security, peer->role),
 		    dtls_kb_key_size(security, peer->role));
 
-    /* re-use N to create additional data according to RFC 5246, Section 6.2.3.3:
+    /* reuse N to create additional data according to RFC 5246, Section 6.2.3.3:
      *
      * additional_data = seq_num + TLSCompressed.type +
      *                   TLSCompressed.version + TLSCompressed.length;
@@ -1929,7 +1929,7 @@ dtls_0_send_hello_verify_request(dtls_context_t *ctx,
    * HelloVerifyRequest handshake messages according to Section 4.2.1
    * of RFC 6347.
    *
-   * This does not apply to a renegotation ClientHello
+   * This does not apply to a renegotiation ClientHello
    */
   dtls_int_to_uint16(buf + 1, DTLS10_VERSION);
 
@@ -2036,7 +2036,7 @@ static unsigned char sendbuf[DTLS_MAX_BUF];
  *
  * @param ctx             The DTLS context in effect.
  * @param peer            The remote party where the packet is sent.
- * @param security        The encryption paramater used to encrypt.
+ * @param security        The encryption parameter used to encrypt.
  * @param session         The transport address of the remote peer.
  * @param type            The content type of this record.
  * @param buf_array       The array of data to send.
@@ -2083,7 +2083,7 @@ dtls_send_multi(dtls_context_t *ctx, dtls_peer_t *peer,
    * HelloVerifyRequest handshake messages according to Section 4.2.1
    * of RFC 6347.
    *
-   * This does not apply to a renegotation ClientHello
+   * This does not apply to a renegotiation ClientHello
    */
   if (security->epoch == 0) {
     if (type == DTLS_CT_HANDSHAKE) {
@@ -2770,7 +2770,7 @@ dtls_send_server_key_exchange_ecdh(dtls_context_t *ctx, dtls_peer_t *peer,
 			  ephemeral_pub_x, ephemeral_pub_y,
 			  DTLS_EC_KEY_SIZE);
 
-  /* sign the ephemeral and its paramaters */
+  /* sign the ephemeral and its parameters */
   dtls_ecdsa_create_sig(key->priv_key, DTLS_EC_KEY_SIZE,
 		       config->tmp.random.client, DTLS_RANDOM_LENGTH,
 		       config->tmp.random.server, DTLS_RANDOM_LENGTH,
@@ -3086,7 +3086,7 @@ dtls_send_certificate_verify_ecdh(dtls_context_t *ctx, dtls_peer_t *peer,
 
   dtls_hash_finalize(sha256hash, &hs_hash);
 
-  /* sign the ephemeral and its paramaters */
+  /* sign the ephemeral and its parameters */
   dtls_ecdsa_create_sig_hash(key->priv_key, DTLS_EC_KEY_SIZE,
 			     sha256hash, sizeof(sha256hash),
 			     point_r, point_s);
@@ -3613,7 +3613,7 @@ check_server_key_exchange_psk(dtls_context_t *ctx,
   data += sizeof(uint16);
 
   if (len != data_length - DTLS_HS_LENGTH - sizeof(uint16)) {
-    dtls_warn("the length of the server identity hint is worng\n");
+    dtls_warn("the length of the server identity hint is wrong\n");
     return dtls_alert_fatal_create(DTLS_ALERT_DECODE_ERROR);
   }
 
@@ -3844,7 +3844,7 @@ decrypt_verify(dtls_peer_t *peer, uint8 *packet, size_t length,
 		    dtls_kb_key_size(security, peer->role));
     dtls_debug_dump("ciphertext", *cleartext, clen);
 
-    /* re-use N to create additional data according to RFC 5246, Section 6.2.3.3:
+    /* reuse N to create additional data according to RFC 5246, Section 6.2.3.3:
      *
      * additional_data = seq_num + TLSCompressed.type +
      *                   TLSCompressed.version + TLSCompressed.length;

@@ -255,7 +255,7 @@ static void fieldModP(uint32_t *A, const uint32_t *B)
 
 /**
  * calculate the result = A mod n.
- * n is the order of the eliptic curve.
+ * n is the order of the elliptic curve.
  * A and result could point to the same value
  *
  * A: input value (max size * 4 bytes)
@@ -645,7 +645,7 @@ int ecc_ecdsa_validate(const uint32_t *x, const uint32_t *y, const uint32_t *e, 
 
 	// tmp3 = tmp1 + tmp2
 	ec_add(tmp1_x, tmp1_y, tmp2_x, tmp2_y, tmp3_x, tmp3_y);
-	// TODO: this u_1 * G + u_2 * Q_A  could be optimiced with Straus's algorithm.
+	// TODO: this u_1 * G + u_2 * Q_A  could be optimized with Straus's algorithm.
 
 	return isSame(tmp3_x, r, arrayLength) ? 0 : -1;
 }
@@ -657,7 +657,7 @@ int ecc_is_valid_key(const uint32_t * priv_key)
 
 /*
  * This exports the low level functions so the tests can use them.
- * In real use the compiler is now bale to optimice the code better.
+ * In real use the compiler is now able to optimize the code better.
  */
 #ifdef TEST_INCLUDE
 uint32_t ecc_add( const uint32_t *x, const uint32_t *y, uint32_t *result, uint8_t length)

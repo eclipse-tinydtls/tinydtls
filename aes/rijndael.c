@@ -27,7 +27,7 @@
  */
 
 /* #include <sys/param.h> */
-/* #include <sys/systm.h> */
+/* #include <sys/system.h> */
 
 #include "rijndael.h"
 
