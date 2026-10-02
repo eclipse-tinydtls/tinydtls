@@ -83,17 +83,17 @@ get_psk_info(struct dtls_context_t *ctx, const session_t *session,
              unsigned char *result, size_t result_length) {
 
   struct keymap_t {
-    unsigned char *id;
+    const unsigned char *id;
     size_t id_length;
-    unsigned char *key;
+    const unsigned char *key;
     size_t key_length;
   } psk[3] = {
-    { (unsigned char *)"Client_identity", 15,
-      (unsigned char *)"secretPSK", 9 },
-    { (unsigned char *)"default identity", 16,
-      (unsigned char *)"\x11\x22\x33", 3 },
-    { (unsigned char *)"\0", 2,
-      (unsigned char *)"", 1 }
+    { (const unsigned char *)"Client_identity", 15,
+      (const unsigned char *)"secretPSK", 9 },
+    { (const unsigned char *)"default identity", 16,
+      (const unsigned char *)"\x11\x22\x33", 3 },
+    { (const unsigned char *)"\0", 2,
+      (const unsigned char *)"", 1 }
   };
   (void)ctx;
   (void)session;
