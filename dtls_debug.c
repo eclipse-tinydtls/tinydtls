@@ -251,7 +251,7 @@ dsrv_print_addr(const session_t *addr, char *buf, size_t len) {
 #endif /* ! HAVE_INET_NTOP */
 }
 
-#if !defined(WITH_CONTIKI) && !defined(_MSC_VER)
+#if !defined(WITH_CONTIKI)
 
 static void
 dtls_logging_handler(log_t level, const char *message) {
@@ -322,7 +322,7 @@ dsrv_log(log_t level, const char *format, ...) {
 
 #elif defined (HAVE_VPRINTF) /* WITH_CONTIKI */
 void
-dsrv_log(log_t level, char *format, ...) {
+dsrv_log(log_t level, const char *format, ...) {
   static char timebuf[32];
   va_list ap;
 
@@ -370,7 +370,7 @@ void dump(unsigned char *buf, size_t len) {
 void dtls_dsrv_log_addr(log_t level, const char *name, const session_t *addr)
 {
   char addrbuf[73];
-  int len;
+  size_t len;
 
   len = dsrv_print_addr(addr, addrbuf, sizeof(addrbuf));
   if (!len)

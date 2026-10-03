@@ -48,27 +48,47 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
+    - name: setup
+      run: |
+        sudo apt-get update && sudo apt-get install -y libcunit1-dev
     - name: Build tinydtls
       run: |
         cmake -E make_directory build_test
         cd build_test
         cmake -DWARNING_TO_ERROR=ON -Dmake_tests=ON ..
         cmake --build .
+    - name: Install tinydtls
+      run: |
+        cd build_test
+        mkdir -p test-install
+        cp cmake_install.cmake test-install
+        cmake --install ./test-install --prefix ./test-install
+
   build-macos-cmake:
     name: Build for macOS using CMake
     runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v6
+    - name: setup
+      run: |
+        brew install cunit 
+        brew --prefix cunit
     - name: Build tinydtls
       run: |
         cmake -E make_directory build_test
         cd build_test
         cmake -DWARNING_TO_ERROR=ON -Dmake_tests=ON ..
         cmake --build .
+    - name: Install tinydtls
+      run: |
+        cd build_test
+        mkdir -p test-install
+        cp cmake_install.cmake test-install
+        cmake --install ./test-install --prefix ./test-install
 
-  build-windows:
-    name: Build for Windows using CMake
+  build-windows-unix:
+    name: Build for Windows using CMake + Unix Makefiles
     runs-on: windows-latest
 
     steps:
@@ -77,7 +97,26 @@ jobs:
       run: |
         cmake -E make_directory build_test
         cd build_test
-        cmake -G "Unix Makefiles" -DWARNING_TO_ERROR=ON ..
+        cmake -G "Unix Makefiles" -DWARNING_TO_ERROR=ON -Dmake_tests=ON ..
+        cmake --build .
+    - name: Install tinydtls
+      run: |
+        cd build_test
+        mkdir -p test-install
+        cp cmake_install.cmake test-install
+        cmake --install ./test-install --prefix ./test-install
+
+  build-windows-vs:
+    name: Build for Windows using CMake + Visual Studio
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Build tinydtls
+      run: |
+        cmake -E make_directory build_test
+        cd build_test
+        cmake -Dmake_tests=ON ..
         cmake --build .
 
   mingw-cmake:
@@ -106,13 +145,18 @@ jobs:
         with:
           msystem: ${{matrix.OS}}
           update: true
-          install: git mingw-w64-${{env.MINGW_VARIANT}}-gcc mingw-w64-${{env.MINGW_VARIANT}}-cmake mingw-w64-${{env.MINGW_VARIANT}}-openssl
+          install: git mingw-w64-${{env.MINGW_VARIANT}}-gcc mingw-w64-${{env.MINGW_VARIANT}}-cmake mingw-w64-${{env.MINGW_VARIANT}}-openssl  mingw-w64-${{env.MINGW_VARIANT}}-cunit
       - name: MinGW ${{matrix.OS}} build
         run: |
           echo 'Running in MSYS2 ${{matrix.OS}}!'
-          cmake -E remove_directory build
-          cmake -E make_directory build
-          cd build
-          cmake .. -DWARNING_TO_ERROR=ON
+          cmake -E remove_directory build_test
+          cmake -E make_directory build_test
+          cd build_test
+          cmake -DWARNING_TO_ERROR=ON -Dmake_tests=ON ..
           cmake --build .
-          cmake --build . -- install
+      - name: MinGW ${{matrix.OS}} install
+        run: |
+          cd build_test
+          mkdir -p test-install
+          cp cmake_install.cmake test-install
+          cmake --install ./test-install --prefix ./test-install

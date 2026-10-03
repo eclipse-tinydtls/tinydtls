@@ -40,7 +40,7 @@
  * @param buf The buffer to fill
  * @param len the length of the buffer to fill
  *
- * @return 1 buffer filled
+ * @return length of buffer filled
  */
 int dtls_prng(unsigned char *buf, size_t len);
 
