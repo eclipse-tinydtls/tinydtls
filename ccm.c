@@ -287,6 +287,9 @@ dtls_ccm_decrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
     msg += lm;
   }
   
+  /* Check that SET_COUNTER() does not overflow in L shift */
+  assert(L <= 8);
+
   /* calculate S_0 */  
   SET_COUNTER(A, L, 0, counter_tmp);
   rijndael_encrypt(ctx, A, S);
