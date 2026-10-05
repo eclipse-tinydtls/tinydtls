@@ -412,7 +412,7 @@ int dtls_ec_key_asn1_from_uint32(const uint32_t *key, size_t key_size,
   if (buf[i] >= 0x80) {
     /* 
      * Preserve unsigned by adding leading 0 (i may go negative which is
-     * explicitely handled below with the assumption that buf is at least 33
+     * explicitly handled below with the assumption that buf is at least 33
      * bytes in size).
      */
      --i;

@@ -270,7 +270,7 @@ PROCESS_THREAD(ecc_field_test, ev, d)
 	nullEverything();
 	//rShiftTest();
 	//isOneTest();
-	printf("%s\n", "All Tests succesfull!");
+	printf("%s\n", "All Tests successful!");
 
 	PROCESS_END();
 }
@@ -297,7 +297,7 @@ int main(int argc, char const *argv[])
 	nullEverything();
 	//rShiftTest();
 	//isOneTest();
-	printf("%s\n", "All Tests succesfull!");
+	printf("%s\n", "All Tests successful!");
 	return 0;
 }
 #endif /* CONTIKI */

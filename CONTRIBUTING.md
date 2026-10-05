@@ -107,7 +107,7 @@ Tinydtls Coding style:
 
 * In the implementation (i.e., in files ending with '.c'), function
   identifiers start on the first column of a line. The function's
-  return type preceeds the function identifier on a line of its
+  return type precedes the function identifier on a line of its
   own. For example, in `dtls.c` the following definition is found:
 
 ```
