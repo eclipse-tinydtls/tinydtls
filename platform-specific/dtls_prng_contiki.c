@@ -27,11 +27,12 @@ int
 dtls_prng(unsigned char *buf, size_t len)
 {
 #ifdef HAVE_PRNG
+  /* contiki_prng_impl() must return 0 on failure, else 1. */
   return contiki_prng_impl(buf, len);
 #else /* ! HAVE_PRNG */
   /**
    * Fills \p buf with \p len random bytes. This is the default
-   * implementation for prng().  You might want to change prng() to use
+   * implementation for dtls_prng().  You might want to change dtls_prng() to use
    * a better PRNG on your specific platform.
    */
   unsigned short v = random_rand();
@@ -43,7 +44,7 @@ dtls_prng(unsigned char *buf, size_t len)
   }
 
   memcpy(buf, &v, len);
-  return len;
+  return 1;
 }
 #endif /* ! HAVE_PRNG */
 

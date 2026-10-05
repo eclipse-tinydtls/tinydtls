@@ -132,10 +132,10 @@ t_test_ecc_dh(void) {
   int ret;
 
   ret = dtls_prng((void *)secretA, sizeof(secretA));
-  CU_ASSERT(ret > 1);
+  CU_ASSERT(ret == 1);
 
   ret = dtls_prng((void *)secretB, sizeof(secretB));
-  CU_ASSERT(ret > 1);
+  CU_ASSERT(ret == 1);
 
   ecc_ec_mult(BasePointx, BasePointy, secretA, tempx, tempy);
   ecc_ec_mult(BasePointx, BasePointy, secretB, tempBx1, tempBy1);
