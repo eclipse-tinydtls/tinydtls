@@ -33,6 +33,14 @@ endif()
 
 option(make_tests "Make test programs and examples" OFF)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+if(MSVC)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
 if(NOT PLATFORM)
    # PLATFORM seems to be not used
    set(PLATFORM "posix" CACHE STRING "Choose platform." FORCE)
@@ -77,7 +85,7 @@ target_compile_definitions(tinydtls PUBLIC DTLSv12 WITH_SHA256 SHA2_USE_INTTYPES
 
 if(MSVC)
     option(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS "Export all symbols when compiling to a .dll" ON)
-    target_compile_options(tinydtls PRIVATE -Wall)
+    # target_compile_options(tinydtls PRIVATE /Wall /wd4820 /wd4668)
     if(${WARNING_TO_ERROR})
         target_compile_options(tinydtls PRIVATE -WX)
      endif()
@@ -92,6 +100,7 @@ set_target_properties(tinydtls PROPERTIES VERSION ${PACKAGE_VERSION} SOVERSION $
 
 if( ${make_tests} )
     add_subdirectory(tests)
+    target_compile_options(tinydtls PRIVATE -DTEST_INCLUDE)
 endif()
 
 if(BUILD_SHARED_LIBS)

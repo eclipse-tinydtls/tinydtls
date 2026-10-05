@@ -17,26 +17,54 @@
 /* This is needed for apple */
 #define __APPLE_USE_RFC_3542
 
+#include "tinydtls.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif /* HAVE_UNISTD_H */
 #include <ctype.h>
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif /* HAVE_NETINET_IN_H */
 #include <sys/types.h>
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif /* HAVE_SYS_SOCKET_H */
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif /* HAVE_SYS_TIME_H */
 
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif /* HAVE_ARPA_INET_H */
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#endif /* HAVE_NETDB_H */
 #include <signal.h>
+
+#ifdef IS_WINDOWS
+#ifdef _MSC_VER
+#include "getopt.c"
+#define fileno _fileno
+#endif /* _MSC_VER */
+#define OPTVAL_T(t)         (const char*)(t)
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO   1       /* Standard output.  */
+#endif /* STDOUT_FILENO */
+#else /* ! IS_WINDOWS */
+#define OPTVAL_T(t)         (t)
+#endif /* ! IS_WINDOWS */
 
 #include "global.h"
 #include "dtls_debug.h"
 #include "dtls_ciphers_util.h"
 #include "dtls.h"
+
+#ifndef MSG_TRUNC
+#define MSG_TRUNC 0
+#endif /* MSG_TRUNC */
 
 #define DEFAULT_PORT 20220
 
@@ -94,10 +122,10 @@ static const unsigned char ecdsa_pub_key_y[] = {
 #endif /* DTLS_ECC */
 
 #ifdef DTLS_PSK
-static ssize_t
+static int
 read_from_file(char *arg, unsigned char *buf, size_t max_buf_len) {
   FILE *f;
-  ssize_t result = 0;
+  int result = 0;
 
   f = fopen(arg, "r");
   if (f == NULL)
@@ -237,8 +265,13 @@ send_to_peer(struct dtls_context_t *ctx,
              session_t *session, uint8 *data, size_t len) {
 
   int fd = *(int *)dtls_get_app_data(ctx);
+#ifdef IS_WINDOWS
+  return sendto(fd, (char *)data, len, 0,
+                &session->addr.sa, session->size);
+#else /* ! IS_WINDOWS */
   return sendto(fd, data, len, MSG_DONTWAIT,
                 &session->addr.sa, session->size);
+#endif /* ! IS_WINDOWS */
 }
 
 static void
@@ -278,7 +311,7 @@ dtls_handle_read(struct dtls_context_t *ctx) {
 
   memset(&session, 0, sizeof(session_t));
   session.size = sizeof(session.addr);
-  len = recvfrom(fd, buf, MAX_READ_BUF, MSG_TRUNC,
+  len = recvfrom(fd, (char *)buf, MAX_READ_BUF, MSG_TRUNC,
                  &session.addr.sa, &session.size);
 
   if (len < 0) {
@@ -420,7 +453,7 @@ main(int argc, char **argv) {
   unsigned short local_port = 0;
   log_t log_level = DTLS_LOG_WARN;
   int fd;
-  ssize_t result;
+  int result;
   int on = 1;
   int opt = 0;
   int res;
@@ -540,7 +573,7 @@ main(int argc, char **argv) {
     return 0;
   }
 
-  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on) ) < 0) {
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, OPTVAL_T(&on), sizeof(on) ) < 0) {
     dtls_alert("setsockopt SO_REUSEADDR: %s\n", strerror(errno));
   }
 #if 0
@@ -553,15 +586,15 @@ main(int argc, char **argv) {
   on = 1;
   if (dst.addr.sa.sa_family == AF_INET6) {
 #ifdef IPV6_RECVPKTINFO
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, &on, sizeof(on) ) < 0) {
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, OPTVAL_T(&on), sizeof(on) ) < 0) {
 #else /* IPV6_RECVPKTINFO */
-    if (setsockopt(fd, IPPROTO_IPV6, IPV6_PKTINFO, &on, sizeof(on) ) < 0) {
+    if (setsockopt(fd, IPPROTO_IPV6, IPV6_PKTINFO, OPTVAL_T(&on), sizeof(on) ) < 0) {
 #endif /* IPV6_RECVPKTINFO */
       dtls_alert("setsockopt IPV6_PKTINFO: %s\n", strerror(errno));
     }
   }
   else {
-    if (setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &on, sizeof(on) ) < 0) {
+    if (setsockopt(fd, IPPROTO_IP, IP_PKTINFO, OPTVAL_T(&on), sizeof(on) ) < 0) {
       dtls_alert("setsockopt IP_PKTINFO: %s\n", strerror(errno));
     }
   }
