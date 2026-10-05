@@ -1,7 +1,7 @@
 # pkg-config file for tinydtls
 #
 #
-# Copyright (c) 2011-2021 Olaf Bergmann (TZI) and others.
+# Copyright (c) 2011-2026 Olaf Bergmann (TZI) and others.
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
 # and Eclipse Distribution License v. 1.0 which accompanies this distribution.
@@ -22,5 +22,5 @@ Name: @PACKAGE_NAME@
 Description: A C library for Datagram Transport Layer Security (DTLS) supporting both client and server functionality.
 URL: @PACKAGE_URL@
 Version: @PACKAGE_VERSION@
-Libs: -L${libdir} -ltinydtls
-Cflags: -I${includedir}/tinydtls
+Libs: -L${libdir} -ltinydtls @SAN_LIBS@
+Cflags: -I${includedir}/tinydtls @SAN_CFLAGS@

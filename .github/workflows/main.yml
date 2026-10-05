@@ -42,6 +42,34 @@ jobs:
           libtool --mode=execute valgrind --track-origins=yes --leak-check=yes --show-reachable=yes --error-exitcode=123 --quiet tests/unit-tests/testdriver
           libtool --mode=execute valgrind --track-origins=yes --leak-check=yes --show-reachable=yes --error-exitcode=123 --quiet tests/ccm-test
 
+  build-linux-sanitizer:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        BITS: ["32", "64" ]
+    steps:
+      - uses: actions/checkout@v6
+      - name: setup
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update && sudo apt-get install -y libcunit1-dev libtool libtool-bin exuberant-ctags build-essential libc6-dev-i386 libcunit1-dev:i386
+          ./autogen.sh
+      - name: configure
+        run: |
+          $GITHUB_WORKSPACE/configure --enable-tests --enable-sanitizer
+      - name: compile-32
+        if: matrix.BITS == '32'
+        run: |
+          make EXTRA_CFLAGS="-Werror -m32"
+      - name: compile-64
+        if: matrix.BITS == '64'
+        run: |
+          make EXTRA_CFLAGS=-Werror
+      - name: tests
+        run: |
+          tests/unit-tests/testdriver
+          tests/ccm-test
+
   build-linux-cmake:
     name: Build for Linux using CMake
     runs-on: ubuntu-latest

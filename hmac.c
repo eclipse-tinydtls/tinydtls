@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * Copyright (c) 2011-2020 Olaf Bergmann (TZI) and others.
+ * Copyright (c) 2011-2026 Olaf Bergmann (TZI) and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
@@ -46,7 +46,7 @@ dtls_hmac_init(dtls_hmac_context_t *ctx, const unsigned char *key, size_t klen) 
     dtls_hash_init(&ctx->data);
     dtls_hash_update(&ctx->data, key, klen);
     dtls_hash_finalize(ctx->pad, &ctx->data);
-  } else
+  } else if (key)
     memcpy(ctx->pad, key, klen);
 
   /* create ipad: */

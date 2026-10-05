@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * Copyright (c) 2011-2022 Olaf Bergmann (TZI) and others.
+ * Copyright (c) 2011-2026 Olaf Bergmann (TZI) and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
@@ -2153,7 +2153,7 @@ return_unlock:
   return res <= 0 ? res : (int)(overall_len - (len - (unsigned int)res));
 }
 
-static inline int
+static int
 dtls_send_alert(dtls_context_t *ctx, dtls_peer_t *peer, dtls_alert_level_t level,
 		dtls_alert_t description) {
   uint8_t msg[] = { level, description };

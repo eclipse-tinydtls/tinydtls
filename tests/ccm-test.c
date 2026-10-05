@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
 #endif /* WITH_CONTIKI */
   long int len;
   size_t n;
+  int ret = 0;
 
   rijndael_ctx ctx;
 
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
 
     if (rijndael_set_key_enc_only(&ctx, data[n].key, 8*sizeof(data[n].key)) < 0) {
       fprintf(stderr, "cannot set key\n");
-      return -1;
+      return 1;
     }
 
     len = dtls_ccm_encrypt_message(&ctx, data[n].M, data[n].L, data[n].nonce, 
@@ -63,11 +64,13 @@ int main(int argc, char **argv) {
 				   data[n].msg, data[n].la);
     
     len +=  + data[n].la;
-    printf("Packet Vector #%lu ", n+1);
-    if ((size_t)len != data[n].r_lm || memcmp(data[n].msg, data[n].result, len))
+    printf("Packet Vector #%zu ", n+1);
+    if ((size_t)len != data[n].r_lm || memcmp(data[n].msg, data[n].result, len)) {
       printf("FAILED, ");
-    else 
+      ret = 1;
+    } else {
       printf("OK, ");
+    }
     
     printf("result is (total length = %lu):\n\t", len);
     dump(data[n].msg, len);
@@ -76,15 +79,17 @@ int main(int argc, char **argv) {
 				   data[n].msg + data[n].la, len - data[n].la, 
 				   data[n].msg, data[n].la);
     
-    if (len < 0)
-      printf("Packet Vector #%lu: cannot decrypt message\n", n+1);
-    else 
+    if (len < 0) {
+      printf("Packet Vector #%zu: cannot decrypt message\n", n+1);
+      ret = 1;
+    } else {
       printf("\t*** MAC verified (total length = %lu) ***\n", len + data[n].la);
+    }
   }
 
 #ifdef WITH_CONTIKI
   PROCESS_END();
 #else /* WITH_CONTIKI */
-  return 0;
+  return ret;
 #endif /* WITH_CONTIKI */
 }
