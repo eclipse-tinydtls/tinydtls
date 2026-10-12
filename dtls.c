@@ -166,7 +166,9 @@ memarray_t dtlscontext_storage;
 #define DTLS_SKEXECPSK_LENGTH_MIN 2
 #define DTLS_SKEXECPSK_LENGTH_MAX 2 + DTLS_PSK_MAX_CLIENT_IDENTITY_LEN
 #define DTLS_CKXPSK_LENGTH_MIN 2
-#define DTLS_CKXEC_LENGTH (1 + 1 + max(DTLS_EC_KEY_SIZE + DTLS_EC_KEY_SIZE, DTLS_PSK_MAX_CLIENT_IDENTITY_LEN))
+#define DTLS_CKXEC_ECDSA_LENGTH (1 + 1 + DTLS_EC_KEY_SIZE + DTLS_EC_KEY_SIZE)
+#define DTLS_CKXEC_PSK_LENGTH (2 + DTLS_PSK_MAX_CLIENT_IDENTITY_LEN)
+#define DTLS_CKXEC_LENGTH (max(DTLS_CKXEC_ECDSA_LENGTH, DTLS_CKXEC_PSK_LENGTH))
 #define DTLS_CV_LENGTH (1 + 1 + 2 + 1 + 1 + 1 + 1 + DTLS_EC_KEY_SIZE + 1 + 1 + DTLS_EC_KEY_SIZE)
 #define DTLS_FIN_LENGTH 12
 
@@ -1513,7 +1515,7 @@ check_client_keyexchange(dtls_context_t *ctx,
 #ifdef DTLS_ECC
   if (key_exchange_algorithm == DTLS_KEY_EXCHANGE_ECDHE_ECDSA) {
 
-    if (length < DTLS_HS_LENGTH + DTLS_CKXEC_LENGTH) {
+    if (length < DTLS_HS_LENGTH + DTLS_CKXEC_ECDSA_LENGTH) {
       dtls_debug("The client key exchange is too short\n");
       return dtls_alert_fatal_create(DTLS_ALERT_HANDSHAKE_FAILURE);
     }
@@ -2969,44 +2971,40 @@ static int
 dtls_send_client_key_exchange(dtls_context_t *ctx, dtls_peer_t *peer)
 {
   uint8 buf[DTLS_CKXEC_LENGTH];
-  uint8 *p;
+  uint8 *p = buf;
   dtls_handshake_parameters_t *handshake = peer->handshake_params;
   const cipher_suite_key_exchange_algorithm_t key_exchange_algorithm =
           get_key_exchange_algorithm(handshake->cipher_index);
   int ret;
-
-  p = buf;
 
   memset(buf, 0, sizeof(buf));
   switch (key_exchange_algorithm) {
   case DTLS_KEY_EXCHANGE_PSK:
 #ifdef DTLS_PSK
   {
-      int len;
-
+    int len = 0;
+    int max_len = min(sizeof(buf) - sizeof(uint16),
+                      sizeof(handshake->keyx.psk.identity));
+    p += sizeof(uint16);
     len = CALL(ctx, get_psk_info, &peer->session, DTLS_PSK_IDENTITY,
-	       handshake->keyx.psk.identity, handshake->keyx.psk.id_length,
-	       buf + sizeof(uint16),
-	       min(sizeof(buf) - sizeof(uint16),
-		   sizeof(handshake->keyx.psk.identity)));
+               handshake->keyx.psk.identity, handshake->keyx.psk.id_length,
+               p, max_len);
     if (len < 0) {
       dtls_crit("no psk identity set in kx\n");
       return len;
     }
 
-    if (len + sizeof(uint16) > DTLS_CKXEC_LENGTH) {
+    if (len > max_len) {
       memset(&handshake->keyx.psk, 0, sizeof(dtls_handshake_parameters_psk_t));
-      dtls_warn("the psk identity is too long\n");
+      dtls_crit("the psk identity is too long\n");
       return dtls_alert_fatal_create(DTLS_ALERT_INTERNAL_ERROR);
     }
-    handshake->keyx.psk.id_length = (unsigned int)len;
-    memcpy(handshake->keyx.psk.identity, p + sizeof(uint16), len);
+    handshake->keyx.psk.id_length = (uint16_t)len;
+    memcpy(handshake->keyx.psk.identity, p, len);
 
-    dtls_int_to_uint16(p, handshake->keyx.psk.id_length);
-    p += sizeof(uint16);
-
-    memcpy(p, handshake->keyx.psk.identity, handshake->keyx.psk.id_length);
-    p += handshake->keyx.psk.id_length;
+    dtls_int_to_uint16(buf, (uint16_t)len);
+    // p is already at the id in buf + sizeof(uint16)
+    p += len;
 
     break;
   }
@@ -3032,9 +3030,9 @@ dtls_send_client_key_exchange(dtls_context_t *ctx, dtls_peer_t *peer)
       ephemeral_pub_y = p;
       p += DTLS_EC_KEY_SIZE;
 
-    dtls_ecdsa_generate_key(peer->handshake_params->keyx.ecdsa.own_eph_priv,
-    			    ephemeral_pub_x, ephemeral_pub_y,
-    			    DTLS_EC_KEY_SIZE);
+      dtls_ecdsa_generate_key(peer->handshake_params->keyx.ecdsa.own_eph_priv,
+                              ephemeral_pub_x, ephemeral_pub_y,
+                              DTLS_EC_KEY_SIZE);
 
       break;
     }
@@ -3055,7 +3053,7 @@ dtls_send_client_key_exchange(dtls_context_t *ctx, dtls_peer_t *peer)
   assert((buf <= p) && ((unsigned int)(p - buf) <= sizeof(buf)));
 
   ret = dtls_send_handshake_msg(ctx, peer, DTLS_HT_CLIENT_KEY_EXCHANGE,
-				buf, p - buf);
+                                buf, p - buf);
 
   /* Keep hash information for extended master secret */
   memcpy(&peer->handshake_params->hs_state.ext_hash,
