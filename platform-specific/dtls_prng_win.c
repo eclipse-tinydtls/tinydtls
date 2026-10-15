@@ -30,16 +30,16 @@ int
 dtls_prng(unsigned char *buf, size_t len) {
   errno_t err;
   unsigned int number;
-  size_t klen = len;
+
   while (len--) {
     err = rand_s(&number);
     if (err != 0) {
       dtls_emerg("PRNG failed\n");
-      return err;
+      return 0;
     }
     *buf++ = number & 0xFF;
   }
-  return klen;
+  return 1;
 }
 
 void

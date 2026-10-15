@@ -30,8 +30,7 @@
 
 int
 dtls_prng(unsigned char *buf, size_t len) {
-  sys_csrand_get(buf, len);
-  return len;
+  return sys_csrand_get(buf, len) == 0 ? 1 : 0;
 }
 
 void

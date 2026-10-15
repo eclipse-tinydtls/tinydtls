@@ -26,13 +26,13 @@
 
 /**
  * Fills \p buf with \p len random bytes. This is the default
- * implementation for prng().  You might want to change prng() to use
+ * implementation for dtls_prng().  You might want to change dtls_prng() to use
  * a better PRNG on your specific platform.
  */
 int
 dtls_prng(unsigned char *buf, size_t len) {
   esp_fill_random(buf, len);
-  return len;
+  return 1;
 }
 
 void

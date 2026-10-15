@@ -37,10 +37,10 @@
  * implementation for prng().  You might want to change prng() to use
  * a better PRNG on your specific platform.
  *
- * @param buf The buffer to fill
- * @param len the length of the buffer to fill
+ * @param buf The buffer to fill.
+ * @param len the length of the buffer to fill.
  *
- * @return 1 buffer filled
+ * @return 1 buffer filled, else 0 on error.
  */
 int dtls_prng(unsigned char *buf, size_t len);
 

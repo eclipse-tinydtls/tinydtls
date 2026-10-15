@@ -36,13 +36,13 @@
 
 /**
  * Fills @p buf with @p len random bytes. This is the default
- * implementation for prng().  You might want to change prng() to use
+ * implementation for dtls_prng().  You might want to change dtls_prng() to use
  * a better PRNG on your specific platform.
  */
 int
 dtls_prng(unsigned char *buf, size_t len) {
 #ifdef HAVE_GETRANDOM
-  return getrandom(buf, len, 0);
+  return getrandom(buf, len, 0) > 0 ? 1 : 0;
 #elif defined(HAVE_RANDOM)
 
 #define RAND_BYTES (RAND_MAX >= 0xffffff ? 3 : (RAND_MAX >= 0xffff ? 2 : 1))
@@ -64,14 +64,13 @@ dtls_prng(unsigned char *buf, size_t len) {
       }
     }
   }
-  return len;
+  return 1;
 #else /*!HAVE_GETRANDOM && !HAVE_RANDOM */
   #error "CVE-2021-34430: using rand() for crypto randoms is not secure!"
   #error "Please update you C-library and rerun the auto-configuration."
-  size_t klen = len;
   while (len--)
     *buf++ = rand() & 0xFF;
-  return klen;
+  return 1;
 #endif /* !HAVE_GETRANDOM */
 }
 

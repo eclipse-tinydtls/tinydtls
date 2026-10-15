@@ -22,7 +22,6 @@
 int
 dtls_prng(unsigned char *buf, size_t len) {
   u32_t v = LWIP_RAND();
-  size_t k_len = len;
 
   while (len > sizeof(v)) {
     memcpy(buf, &v, sizeof(v));
@@ -32,7 +31,7 @@ dtls_prng(unsigned char *buf, size_t len) {
   }
 
   memcpy(buf, &v, len);
-  return k_len;
+  return 1;
 }
 
 void
