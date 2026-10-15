@@ -45,6 +45,8 @@ dtls_prng(unsigned char *buf, size_t len) {
   return getrandom(buf, len, 0);
 #elif defined(HAVE_RANDOM)
 
+#warning "The found random() is only intended for private test-systems."
+
 #define RAND_BYTES (RAND_MAX >= 0xffffff ? 3 : (RAND_MAX >= 0xffff ? 2 : 1))
 
   if (len) {
@@ -83,25 +85,23 @@ dtls_prng_init(unsigned seed) {
   (void)seed;
 #else /* !HAVE_GETRANDOM */
   FILE *urandom = fopen("/dev/urandom", "r");
-  unsigned char buf[sizeof(unsigned long)];
-  (void)seed;
+  unsigned long sec_seed = seed;
 
   if (!urandom) {
     dtls_emerg("cannot initialize PRNG\n");
     return;
   }
 
-  if (fread(buf, 1, sizeof(buf), urandom) != sizeof(buf)) {
+  if (fread(&sec_seed, 1, sizeof(sec_seed), urandom) == sizeof(sec_seed)) {
+#ifdef HAVE_RANDOM
+    srandom(sec_seed);
+#else
+    srand(sec_seed);
+#endif
+  } else {
     dtls_emerg("cannot initialize PRNG\n");
-    return;
   }
 
   fclose(urandom);
-#ifdef HAVE_RANDOM
-  srandom((unsigned long)*buf);
-#else
-  srand((unsigned long)*buf);
-#endif
 #endif /* !HAVE_GETRANDOM */
 }
-
