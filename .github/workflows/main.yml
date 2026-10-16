@@ -104,7 +104,20 @@ jobs:
         cmake -DWARNING_TO_ERROR=ON -Dmake_tests=ON ..
         cmake --build .
 
-  build-windows:
+  build-windows-unix:
+    name: Build for Windows using CMake + Unix Makefiles
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Build tinydtls
+      run: |
+        cmake -E make_directory build_test
+        cd build_test
+        cmake -G "Unix Makefiles" -DWARNING_TO_ERROR=ON -Dmake_tests=ON ..
+        cmake --build .
+
+  build-windows-vs:
     name: Build for Windows using CMake
     runs-on: windows-latest
 
@@ -114,7 +127,7 @@ jobs:
       run: |
         cmake -E make_directory build_test
         cd build_test
-        cmake -G "Unix Makefiles" -DWARNING_TO_ERROR=ON ..
+        cmake -Dmake_tests=ON ..
         cmake --build .
 
   mingw-cmake:
@@ -147,9 +160,9 @@ jobs:
       - name: MinGW ${{matrix.OS}} build
         run: |
           echo 'Running in MSYS2 ${{matrix.OS}}!'
-          cmake -E remove_directory build
-          cmake -E make_directory build
-          cd build
+          cmake -E remove_directory build_test
+          cmake -E make_directory build_test
+          cd build_test
           cmake .. -DWARNING_TO_ERROR=ON
           cmake --build .
           cmake --build . -- install

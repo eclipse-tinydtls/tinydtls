@@ -100,7 +100,7 @@ void dtls_set_log_handler(dtls_log_handler_t app_handler);
  * Writes the given text to \c stdout. The text is output only when \p
  * level is below or equal to the log level that set by
  * set_log_level(). */
-#ifdef HAVE_VPRINTF
+#if defined(HAVE_VPRINTF) || defined (_MSC_VER)
 #if (defined(__GNUC__) && !defined(__MINGW32__))
 void dsrv_log(log_t level, const char *format, ...) __attribute__ ((format(printf, 2, 3)));
 #else /* !__GNUC__ && !__MINGW32__ */
