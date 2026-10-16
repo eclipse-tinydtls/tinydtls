@@ -210,7 +210,6 @@ try_send(struct dtls_context_t *ctx, session_t *dst, size_t len, char *buf) {
   res = dtls_write(ctx, dst, (uint8 *)buf, len);
   if (res >= 0) {
     memmove(buf, buf + res, len - res);
-    len -= res;
   }
 }
 

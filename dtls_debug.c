@@ -191,7 +191,6 @@ dsrv_print_addr(const session_t *addr, char *buf, size_t len) {
     return 0;
   }
   p += err;
-  len -= err;
 
   return p - buf;
 #else /* ! HAVE_INET_NTOP */

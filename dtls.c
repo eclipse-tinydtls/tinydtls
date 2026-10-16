@@ -2446,7 +2446,6 @@ dtls_check_ecdsa_signature_elem(uint8 *data, size_t data_length,
   if (ret <= 0)
     return ret;
   data += ret;
-  data_length -= ret;
 
   return data - data_orig;
 }
@@ -2483,8 +2482,10 @@ check_client_certificate_verify(dtls_context_t *ctx,
   if (ret < 0) {
     return ret;
   }
+#ifndef SCAN_BUILD_IGNORE_DEADSTORES
   data += ret;
   data_length -= ret;
+#endif /* SCAN_BUILD_IGNORE_DEADSTORES */
 
   copy_hs_hash(peer, &hs_hash);
 
@@ -3088,6 +3089,7 @@ dtls_send_certificate_verify_ecdh(dtls_context_t *ctx, dtls_peer_t *peer,
 
   dtls_hash_finalize(sha256hash, &hs_hash);
 
+  assert(key);
   /* sign the ephemeral and its parameters */
   dtls_ecdsa_create_sig_hash(key->priv_key, DTLS_EC_KEY_SIZE,
 			     sha256hash, sizeof(sha256hash),
@@ -3487,7 +3489,9 @@ check_server_certificate(dtls_context_t *ctx,
 
   memcpy(config->keyx.ecdsa.other_pub_y, data,
 	 sizeof(config->keyx.ecdsa.other_pub_y));
+#ifndef SCAN_BUILD_IGNORE_DEADSTORES
   data += sizeof(config->keyx.ecdsa.other_pub_y);
+#endif /* SCAN_BUILD_IGNORE_DEADSTORES */
 
   err = CALL(ctx, verify_ecdsa_key, &peer->session,
 	     config->keyx.ecdsa.other_pub_x,
@@ -3571,8 +3575,10 @@ check_server_key_exchange_ecdsa(dtls_context_t *ctx,
   if (ret < 0) {
     return ret;
   }
+#ifndef SCAN_BUILD_IGNORE_DEADSTORES
   data += ret;
   data_length -= ret;
+#endif /* SCAN_BUILD_IGNORE_DEADSTORES */
 
   ret = dtls_ecdsa_verify_sig(config->keyx.ecdsa.other_pub_x, config->keyx.ecdsa.other_pub_y,
 			    sizeof(config->keyx.ecdsa.other_pub_x),
@@ -3729,7 +3735,7 @@ check_server_hellodone(dtls_context_t *ctx,
 {
   int res;
 #ifdef DTLS_ECC
-  const dtls_ecdsa_key_t *ecdsa_key;
+  const dtls_ecdsa_key_t *ecdsa_key = NULL;
 #endif /* DTLS_ECC */
 
   dtls_handshake_parameters_t *handshake = peer->handshake_params;
@@ -4783,6 +4789,9 @@ dtls_handle_message(dtls_context_t *ctx,
           dtls_info("received close_notify alert, peer has been invalidated\n");
         else
           dtls_warn("received fatal alert, peer has been invalidated\n");
+        /* handle alert has invalidated peer */
+        peer = NULL;
+        /* no more valid records after fatal alerts */
         return 0;
       } else {
         dtls_stop_retransmission(ctx, peer);

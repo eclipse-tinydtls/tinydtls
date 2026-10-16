@@ -575,8 +575,10 @@ void dtls_sha256_transform(dtls_sha256_ctx* context, const sha2_byte* data) {
 	context->state[6] += g;
 	context->state[7] += h;
 
+#ifndef SCAN_BUILD_IGNORE_DEADSTORES
 	/* Clean up */
 	a = b = c = d = e = f = g = h = T1 = T2 = 0;
+#endif /* SCAN_BUILD_IGNORE_DEADSTORES */
 }
 
 #endif /* SHA2_UNROLL_TRANSFORM */
@@ -608,8 +610,10 @@ void dtls_sha256_update(dtls_sha256_ctx* context, const sha2_byte *data, size_t 
 			/* The buffer is not yet full */
 			MEMCPY_BCOPY(&context->buffer[usedspace], data, len);
 			context->bitcount += len << 3;
+#ifndef SCAN_BUILD_IGNORE_DEADSTORES
 			/* Clean up: */
 			usedspace = freespace = 0;
+#endif /* SCAN_BUILD_IGNORE_DEADSTORES */
 			return;
 		}
 	}
@@ -625,8 +629,10 @@ void dtls_sha256_update(dtls_sha256_ctx* context, const sha2_byte *data, size_t 
 		MEMCPY_BCOPY(context->buffer, data, len);
 		context->bitcount += len << 3;
 	}
+#ifndef SCAN_BUILD_IGNORE_DEADSTORES
 	/* Clean up: */
 	usedspace = freespace = 0;
+#endif /* SCAN_BUILD_IGNORE_DEADSTORES */
 }
 
 void dtls_sha256_final(uint8_t digest[DTLS_SHA256_DIGEST_LENGTH], dtls_sha256_ctx* context) {
@@ -686,7 +692,9 @@ void dtls_sha256_final(uint8_t digest[DTLS_SHA256_DIGEST_LENGTH], dtls_sha256_ct
 
 	/* Clean up state data: */
 	MEMSET_BZERO(context, sizeof(*context));
+#ifndef SCAN_BUILD_IGNORE_DEADSTORES
 	usedspace = 0;
+#endif /* SCAN_BUILD_IGNORE_DEADSTORES */
 }
 
 char *dtls_sha256_end(dtls_sha256_ctx* context, char buffer[DTLS_SHA256_DIGEST_STRING_LENGTH]) {
