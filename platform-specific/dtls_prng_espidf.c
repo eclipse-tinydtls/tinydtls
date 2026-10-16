@@ -39,4 +39,3 @@ void
 dtls_prng_init(unsigned seed) {
   return;
 }
-

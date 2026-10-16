@@ -6,7 +6,7 @@
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
  *
  * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at 
+ * and the Eclipse Distribution License is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
  * Contributors:
@@ -38,7 +38,7 @@
       (A)[i_] |= (C) & 0xFF;						\
   }
 
-static inline void 
+static inline void
 block0(size_t M,       /* number of auth bytes */
        size_t L,       /* number of bytes to encode message length */
        size_t la,      /* l(a) octets additional authenticated data */
@@ -51,16 +51,16 @@ block0(size_t M,       /* number of auth bytes */
 
   /* copy the nonce */
   memcpy(result + 1, nonce, DTLS_CCM_BLOCKSIZE - L - 1);
-  
+
   for (i=0; i < L; i++) {
     result[15-i] = lm & 0xff;
     lm >>= 8;
   }
 }
 
-/** 
+/**
  * Creates the CBC-MAC for the additional authentication data that
- * is sent in cleartext. 
+ * is sent in cleartext.
  *
  * \param ctx  The crypto context for the AES encryption.
  * \param msg  The message starting with the additional authentication data.
@@ -73,7 +73,7 @@ block0(size_t M,       /* number of auth bytes */
  */
 static void
 add_auth_data(rijndael_ctx *ctx, const unsigned char *msg, uint64_t la,
-	      unsigned char B[DTLS_CCM_BLOCKSIZE], 
+	      unsigned char B[DTLS_CCM_BLOCKSIZE],
 	      unsigned char X[DTLS_CCM_BLOCKSIZE]) {
   uint64_t i,j;
 
@@ -114,11 +114,11 @@ add_auth_data(rijndael_ctx *ctx, const unsigned char *msg, uint64_t la,
     memcpy(B + j, msg, i);
     la -= i;
     msg += i;
-    
+
     memxor(B, X, DTLS_CCM_BLOCKSIZE);
-  
+
   rijndael_encrypt(ctx, B, X);
-  
+
   while (la > DTLS_CCM_BLOCKSIZE) {
     for (i = 0; i < DTLS_CCM_BLOCKSIZE; ++i)
       B[i] = X[i] ^ *msg++;
@@ -126,14 +126,14 @@ add_auth_data(rijndael_ctx *ctx, const unsigned char *msg, uint64_t la,
 
     rijndael_encrypt(ctx, B, X);
   }
-  
+
   if (la) {
     memset(B, 0, DTLS_CCM_BLOCKSIZE);
     memcpy(B, msg, la);
     memxor(B, X, DTLS_CCM_BLOCKSIZE);
 
-    rijndael_encrypt(ctx, B, X);  
-  } 
+    rijndael_encrypt(ctx, B, X);
+  }
 }
 
 static inline void
@@ -144,13 +144,13 @@ encrypt(rijndael_ctx *ctx, size_t L, unsigned long counter,
 
   static unsigned long counter_tmp;
 
-  SET_COUNTER(A, L, counter, counter_tmp);    
+  SET_COUNTER(A, L, counter, counter_tmp);
   rijndael_encrypt(ctx, A, S);
   memxor(msg, S, len);
 }
 
 static inline void
-mac(rijndael_ctx *ctx, 
+mac(rijndael_ctx *ctx,
     unsigned char *msg, size_t len,
     unsigned char B[DTLS_CCM_BLOCKSIZE],
     unsigned char X[DTLS_CCM_BLOCKSIZE]) {
@@ -164,9 +164,9 @@ mac(rijndael_ctx *ctx,
 }
 
 long int
-dtls_ccm_encrypt_message(rijndael_ctx *ctx, size_t M, size_t L, 
+dtls_ccm_encrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
 			 const unsigned char nonce[DTLS_CCM_BLOCKSIZE],
-			 unsigned char *msg, size_t lm, 
+			 unsigned char *msg, size_t lm,
 			 const unsigned char *aad, size_t la) {
   size_t i, len;
   unsigned long counter_tmp;
@@ -187,7 +187,7 @@ dtls_ccm_encrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
 
   /* copy the nonce */
   memcpy(A + 1, nonce, DTLS_CCM_BLOCKSIZE - L - 1);
-  
+
   while (lm >= DTLS_CCM_BLOCKSIZE) {
     /* calculate MAC */
     mac(ctx, msg, DTLS_CCM_BLOCKSIZE, B, X);
@@ -216,8 +216,8 @@ dtls_ccm_encrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
     /* update local pointers */
     msg += lm;
   }
-  
-  /* calculate S_0 */  
+
+  /* calculate S_0 */
   SET_COUNTER(A, L, 0, counter_tmp);
   rijndael_encrypt(ctx, A, S);
 
@@ -230,9 +230,9 @@ dtls_ccm_encrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
 long int
 dtls_ccm_decrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
 			 const unsigned char nonce[DTLS_CCM_BLOCKSIZE],
-			 unsigned char *msg, size_t lm, 
+			 unsigned char *msg, size_t lm,
 			 const unsigned char *aad, size_t la) {
-  
+
   size_t len;
   unsigned long counter_tmp;
   unsigned long counter = 1; /* \bug does not work correctly on ia32 when
@@ -257,11 +257,11 @@ dtls_ccm_decrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
 
   /* copy the nonce */
   memcpy(A + 1, nonce, DTLS_CCM_BLOCKSIZE - L - 1);
-  
+
   while (lm >= DTLS_CCM_BLOCKSIZE) {
     /* decrypt */
     encrypt(ctx, L, counter, msg, DTLS_CCM_BLOCKSIZE, A, S);
-    
+
     /* calculate MAC */
     mac(ctx, msg, DTLS_CCM_BLOCKSIZE, B, X);
 
@@ -281,13 +281,13 @@ dtls_ccm_decrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
      * (i.e., we can use memcpy() here).
      */
     memcpy(B + lm, X + lm, DTLS_CCM_BLOCKSIZE - lm);
-    mac(ctx, msg, lm, B, X); 
+    mac(ctx, msg, lm, B, X);
 
     /* update local pointers */
     msg += lm;
   }
-  
-  /* calculate S_0 */  
+
+  /* calculate S_0 */
   SET_COUNTER(A, L, 0, counter_tmp);
   rijndael_encrypt(ctx, A, S);
 
@@ -296,7 +296,7 @@ dtls_ccm_decrypt_message(rijndael_ctx *ctx, size_t M, size_t L,
   /* return length if MAC is valid, otherwise continue with error handling */
   if (equals(X, msg, M))
     return len - M;
-  
+
  error:
   return -1;
 }

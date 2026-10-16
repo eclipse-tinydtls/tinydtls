@@ -1228,4 +1228,3 @@ rijndaelDecrypt(const aes_u32 rk[/*4*(Nr + 1)*/], int Nr, const aes_u8 ct[16],
 	PUTU32(pt + 12, s3);
 }
 #endif /* WITH_AES_DECRYPT */
-

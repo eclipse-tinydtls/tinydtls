@@ -6,7 +6,7 @@
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
  *
  * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at 
+ * and the Eclipse Distribution License is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
  * Contributors:
@@ -89,7 +89,7 @@ netq_init(void) {
 
 #endif /* WITH_CONTIKI */
 
-int 
+int
 netq_insert_node(netq_t **queue, netq_t *node) {
   netq_t *p;
 
@@ -136,10 +136,10 @@ netq_remove(netq_t **queue, netq_t *p) {
 
 netq_t *netq_pop_first(netq_t **queue) {
   netq_t *p = netq_head(queue);
-  
+
   if (p)
     LL_DELETE(*queue, p);
-  
+
   return p;
 }
 
@@ -157,13 +157,13 @@ netq_node_new(size_t size) {
   return node;
 }
 
-void 
+void
 netq_node_free(netq_t *node) {
   if (node)
     netq_free_node(node);
 }
 
-void 
+void
 netq_delete_all(netq_t **queue) {
   netq_t *p, *tmp;
   if (queue) {

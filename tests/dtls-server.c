@@ -29,7 +29,7 @@
 #include "tinydtls.h"
 #include "dtls_debug.h"
 #include "dtls_ciphers_util.h"
-#include "dtls.h" 
+#include "dtls.h"
 
 #ifdef IS_WINDOWS
 #include <winsock2.h>
@@ -238,7 +238,7 @@ dtls_handle_read(struct dtls_context_t *ctx) {
     perror("recvfrom");
     return -1;
   } else {
-    dtls_debug("got %d bytes from port %d\n", len, 
+    dtls_debug("got %d bytes from port %d\n", len,
                ntohs(session.addr.sin6.sin6_port));
     if (len <= DTLS_MAX_BUF) {
       dtls_debug_dump("bytes from peer", buf, len);

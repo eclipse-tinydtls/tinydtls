@@ -2,7 +2,7 @@ DESCRIPTION:
     This test vector is taken from the PDF document that describes
     the SHA-256/384/512 algorithms.  That document contains sample
     output for all three versions (SHA-256, SHA-384, and SHA-512).
-    
+
     (Total length of test vector data: 3)
 
 FILE:
@@ -18,4 +18,3 @@ SHA384:
 SHA512:
     ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a
     2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f
-

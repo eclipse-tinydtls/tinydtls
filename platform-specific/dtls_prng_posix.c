@@ -104,4 +104,3 @@ dtls_prng_init(unsigned seed) {
 #endif
 #endif /* !HAVE_GETRANDOM */
 }
-

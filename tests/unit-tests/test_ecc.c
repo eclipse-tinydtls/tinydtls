@@ -32,7 +32,7 @@ uint32_t BasePointy[8] = {	0x37bf51f5, 0xcbb64068, 0x6b315ece, 0x2bce3357,
 							0x7c0f9e16, 0x8ee7eb4a, 0xfe1a7f9b, 0x4fe342e2};
 
 //de2444be bc8d36e6 82edd27e 0f271508 617519b3 221a8fa0 b77cab39 89da97c9
-uint32_t Sx[8] = {	0x89da97c9, 0xb77cab39, 0x221a8fa0, 0x617519b3, 
+uint32_t Sx[8] = {	0x89da97c9, 0xb77cab39, 0x221a8fa0, 0x617519b3,
 					0x0f271508, 0x82edd27e, 0xbc8d36e6, 0xde2444be};
 
 //c093ae7f f36e5380 fc01a5aa d1e66659 702de80f 53cec576 b6350b24 3042a256
@@ -50,7 +50,7 @@ uint32_t Ty[8] = {	0xc8b24316, 0xb656e9d8, 0x598b9e7a, 0xf61a8a52,
 //c51e4753 afdec1e6 b6c6a5b9 92f43f8d d0c7a893 3072708b 6522468b 2ffb06fd
 uint32_t secret[8] = {	0x2ffb06fd, 0x6522468b, 0x3072708b, 0xd0c7a893,
 						0x92f43f8d, 0xb6c6a5b9, 0xafdec1e6, 0xc51e4753};
-							
+
 //72b13dd4 354b6b81 745195e9 8cc5ba69 70349191 ac476bd4 553cf35a 545a067e
 uint32_t resultAddx[8] = {	0x545a067e, 0x553cf35a, 0xac476bd4, 0x70349191,
 							0x8cc5ba69, 0x745195e9, 0x354b6b81, 0x72b13dd4};
@@ -184,7 +184,7 @@ t_test_ecc_ecdsa0(void) {
   ecc_ec_mult(BasePointx, BasePointy, ecdsaTestSecret, pub_x, pub_y);
 
   ret = ecc_ecdsa_sign(ecdsaTestSecret, ecdsaTestMessage, ecdsaTestRand1, tempx, tempy);
-  
+
   memset(tempy, 0, sizeof(tempy));
   ret = ecc_ecdsa_validate(pub_x, pub_y, ecdsaTestMessage, tempx, tempy);
   CU_ASSERT(ret == -1);
@@ -206,7 +206,7 @@ t_init_ecc_tests(void) {
    * the seed. For other platforms, the random sequence will be the
    * same for each run. */
   dtls_prng_init(0);
-  
+
   if (!CU_ADD_TEST(suite,t_test_ecc_add)) {
     fprintf(stderr, "W: cannot add test for ECC add (%s)\n",
             CU_get_error_msg());
@@ -239,4 +239,3 @@ t_init_ecc_tests(void) {
 
   return suite;
 }
-

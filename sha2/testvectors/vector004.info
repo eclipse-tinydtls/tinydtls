@@ -3,7 +3,7 @@ DESCRIPTION:
     own implementation and so may be completely incorrect.  Use with
     a very large grain of salt.  The input sample comes from...well
     most anyone in the U.S. will know and many outside the U.S. too.
-    
+
     (Total length of test vector data: 1515)
 
 FILE:
@@ -19,4 +19,3 @@ SHA384:
 SHA512:
     23450737795d2f6a13aa61adcca0df5eef6df8d8db2b42cd2ca8f783734217a7
     3e9cabc3c9b8a8602f8aeaeb34562b6b1286846060f9809b90286b3555751f09
-

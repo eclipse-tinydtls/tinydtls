@@ -1,8 +1,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "utlist.h" 
-#include "netq.h" 
+#include "utlist.h"
+#include "netq.h"
 
 void
 dump_queue(struct netq_t *queue) {
@@ -21,7 +21,7 @@ dump_queue(struct netq_t *queue) {
 int main(int argc, char **argv) {
   struct netq_t *nq = NULL, *node;
   int i;
-    
+
   clock_time_t timestamps[] = { 300, 100, 200, 400, 500 };
 
   for (i = 0; i < sizeof(timestamps)/sizeof(clock_time_t); i++) {
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
   dump_queue(nq);
 
   netq_node_free(node);
-  
+
   printf("------------------------------------------------------------------------\n");
   printf("queue head:\n");
   node = netq_head(&nq);
@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 
   printf("------------------------------------------------------------------------\n");
   printf("remove all:\n");
-  
+
   netq_delete_all(&nq);
   dump_queue(nq);
 

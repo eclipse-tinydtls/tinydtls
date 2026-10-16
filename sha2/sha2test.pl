@@ -2,7 +2,7 @@
 #
 # FILE:		sha2test.pl
 # AUTHOR:	Aaron D. Gifford - http://www.aarongifford.com/
-# 
+#
 # Copyright (c) 2001, Aaron D. Gifford
 # All rights reserved.
 #
@@ -17,7 +17,7 @@
 # 3. Neither the name of the copyright holder nor the names of contributors
 #    may be used to endorse or promote products derived from this software
 #    without specific prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTOR(S) ``AS IS'' AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -355,4 +355,3 @@ print "----------------------------------------------\n";
 $pass = $tests - $errors;
 print "TOTAL:          ".substr("           $tests", -12)."\t".substr("     $pass", -6)."\t".substr("     $errors", -6)."\n\n";
 print "NO ERRORS!  ALL TESTS WERE SUCCESSFUL!\n\n" if (!$errors);
-

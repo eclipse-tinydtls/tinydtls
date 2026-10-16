@@ -150,4 +150,3 @@ dtls_peer_t *dtls_get_peer(const dtls_context_t *context,
   let the library be backward compatible and mark the old function as
   @deprecated in the doxygen comment.  Please discuss needed changes
   on the mailing list.
-

@@ -6,7 +6,7 @@
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
  *
  * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at 
+ * and the Eclipse Distribution License is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
  * Contributors:
@@ -29,11 +29,11 @@
 #include "global.h"
 #include "hmac.h"
 
-typedef enum { 
+typedef enum {
   DTLS_STATE_INIT = 0, DTLS_STATE_WAIT_CLIENTHELLO, DTLS_STATE_WAIT_CLIENTCERTIFICATE,
   DTLS_STATE_WAIT_CLIENTKEYEXCHANGE, DTLS_STATE_WAIT_CERTIFICATEVERIFY,
   DTLS_STATE_WAIT_CHANGECIPHERSPEC,
-  DTLS_STATE_WAIT_FINISHED, DTLS_STATE_FINISHED, 
+  DTLS_STATE_WAIT_FINISHED, DTLS_STATE_FINISHED,
   /* client states */
   DTLS_STATE_CLIENTHELLO, DTLS_STATE_WAIT_SERVERCERTIFICATE, DTLS_STATE_WAIT_SERVERKEYEXCHANGE,
   DTLS_STATE_WAIT_SERVERHELLODONE,

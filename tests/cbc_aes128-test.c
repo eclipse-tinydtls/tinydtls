@@ -8,7 +8,7 @@
 
 #include "cbc_aes128-testdata.c"
 
-void 
+void
 dump(unsigned char *buf, size_t len) {
   size_t i = 0;
   while (i < len) {
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     cipher = dtls_new_cipher(&ciphers[AES128],
 			     data[n].key,
 			     sizeof(data[n].key));
-    
+
     if (!cipher) {
       fprintf(stderr, "cannot set key\n");
       exit(-1);
@@ -47,9 +47,9 @@ int main(int argc, char **argv) {
     if (len != data[n].r_lm
 	|| memcmp(data[n].msg, data[n].result, len))
       printf("FAILED, ");
-    else 
+    else
       printf("OK, ");
-    
+
     printf("result is (total length = %d):\n\t", (int)len);
     dump(data[n].msg, len);
 

@@ -57,4 +57,3 @@ dtls_prng_init(unsigned seed)
   random_init(seed);
 #endif
 }
-

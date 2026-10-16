@@ -16,9 +16,9 @@ clean:
 
 distclean:	clean
 	@rm -rf $(DISTDIR)
-	@rm -f *~ 
+	@rm -f *~
 
-dist:	
+dist:
 	test -d $(DISTDIR)/$(THIS) || mkdir $(DISTDIR)/$(THIS)
 	cp -r $(FILES) $(DISTDIR)/$(THIS)
 

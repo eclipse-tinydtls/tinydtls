@@ -4,7 +4,7 @@ DESCRIPTION:
     and SHA-512 implementations.  My own implementations match
     his output exactly.  The input data data set is the string
     "Rijndael is AES" repeated 1024 times.
-    
+
     (Total length of test vector data: 15360)
 
 FILE:
@@ -20,4 +20,3 @@ SHA384:
 SHA512:
     fae25ec70bcb3bbdef9698b9d579da49db68318dbdf18c021d1f76aaceff9628
     38873235597e7cce0c68aabc610e0deb79b13a01c302abc108e459ddfbe9bee8
-

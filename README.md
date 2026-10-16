@@ -1,6 +1,6 @@
 # About tinydtls
 
-tinydtls is a library for Datagram Transport Layer Security (DTLS 1.2 
+tinydtls is a library for Datagram Transport Layer Security (DTLS 1.2
 [RFC 6347](https://www.rfc-editor.org/rfc/rfc6347)) covering both the client
 and the server state machine. It is implemented in C and provides support
 for a minimal set of cipher suites suitable for the Internet of Things.

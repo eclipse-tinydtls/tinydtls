@@ -6,7 +6,7 @@
 # and Eclipse Distribution License v. 1.0 which accompanies this distribution.
 #
 # The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
-# and the Eclipse Distribution License is available at 
+# and the Eclipse Distribution License is available at
 # http://www.eclipse.org/org/documents/edl-v10.php.
 #
 # Contributors:
@@ -29,7 +29,7 @@ top_srcdir:= @top_srcdir@
 
 ECC_SOURCES:= ecc.c testecc.c testfield.c test_helper.c
 ECC_HEADERS:= ecc.h test_helper.h
-FILES:=Makefile.in Makefile.contiki $(ECC_SOURCES) $(ECC_HEADERS) 
+FILES:=Makefile.in Makefile.contiki $(ECC_SOURCES) $(ECC_HEADERS)
 DISTDIR=$(top_builddir)/@PACKAGE_TARNAME@-@PACKAGE_VERSION@
 
 ifeq ("@WITH_CONTIKI@", "1")
@@ -56,7 +56,7 @@ testecc: ecc_test.o test_helper.o
 
 testfield: ecc_test.o test_helper.o
 
-check:	
+check:
 	echo DISTDIR: $(DISTDIR)
 	echo top_builddir: $(top_builddir)
 

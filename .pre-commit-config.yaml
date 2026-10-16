@@ -1,4 +1,12 @@
 repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+        exclude: 'sha2/testvectors/.*dat$'
+    -   id: check-merge-conflict
+
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.4.3
     hooks:

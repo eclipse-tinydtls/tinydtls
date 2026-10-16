@@ -8,7 +8,7 @@
 #include <sys/time.h>
 #endif /* HAVE_SYS_TIME_H */
 
-#include "dsrv.h" 
+#include "dsrv.h"
 
 void
 handle_read(struct dsrv_context_t *ctx) {
@@ -18,14 +18,14 @@ handle_read(struct dsrv_context_t *ctx) {
   socklen_t srclen = sizeof(src);
   int fd = dsrv_get_fd(ctx, DSRV_READ);
 
-  len = recvfrom(fd, buf, sizeof(buf), 0, 
+  len = recvfrom(fd, buf, sizeof(buf), 0,
 		 (struct sockaddr *)&src, &srclen);
 
   if (len < 0) {
     perror("recvfrom");
   } else {
     printf("read %d bytes: '%*s'\n", len, len, buf);
-    if (dsrv_sendto(ctx, (struct sockaddr *)&src, srclen, 0, buf, len) 
+    if (dsrv_sendto(ctx, (struct sockaddr *)&src, srclen, 0, buf, len)
 	== NULL) {
       fprintf(stderr, "cannot add packet to sendqueue\n");
     }
@@ -44,10 +44,10 @@ handle_write(struct dsrv_context_t *ctx) {
     return -1;
 
   len = sendto(fd, p->buf, p->len, 0, p->raddr, p->rlen);
-  
+
   if (len < 0)
     perror("sendto");
-  else 
+  else
     nq_pop(ctx->wq);
 
   return len;
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
   struct dsrv_context_t *ctx;
   int result;
 
-  ctx = dsrv_new_context((struct sockaddr *)&listen_addr, sizeof(listen_addr), 
+  ctx = dsrv_new_context((struct sockaddr *)&listen_addr, sizeof(listen_addr),
 			 200,200);
 
   if (!ctx) {
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 
     dsrv_prepare(ctx, &rfds, DSRV_READ);
     dsrv_prepare(ctx, &wfds, DSRV_WRITE);
-    
+
 #if 0
     timeout.tv_sec = 0;
     timeout.tv_usec = dsrv_get_timeout(ctx);
@@ -87,14 +87,14 @@ int main(int argc, char **argv) {
     timeout.tv_sec = 5;
     timeout.tv_usec = 0;
 #endif
-    
+
     result = select( FD_SETSIZE, &rfds, &wfds, 0, &timeout);
-    
+
     if (result < 0) {		/* error */
       if (errno != EINTR)
 	perror("select");
     } else if (result == 0) {	/* timeout */
-      printf(".");		
+      printf(".");
     } else {			/* ok */
       if (dsrv_check(ctx, &wfds, DSRV_WRITE))
 	handle_write(ctx);

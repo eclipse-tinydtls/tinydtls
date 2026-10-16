@@ -3,7 +3,7 @@ DESCRIPTION:
     was provided for SHA-256 (SHA-384 and SHA-512 samples were
     provided), so the sample for SHA-256 comes from the output of
     my own implementation and so may not be correct.
-    
+
     (Total length of test vector data: 112)
 
 FILE:
@@ -19,4 +19,3 @@ SHA384:
 SHA512:
     8e959b75dae313da8cf4f72814fc143f8f7779c6eb9f7fa17299aeadb6889018
     501d289e4900f7e4331b99dec4b5433ac7d329eeb6dd26545e96e55b874be909
-

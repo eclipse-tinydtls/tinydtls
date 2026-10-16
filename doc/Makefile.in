@@ -27,7 +27,7 @@ clean:
 
 distclean:	clean
 	@rm -rf $(DISTDIR)
-	@rm -f *~ 
+	@rm -f *~
 
 dist:	doc
 	test -d $(DISTDIR)/doc || mkdir $(DISTDIR)/doc

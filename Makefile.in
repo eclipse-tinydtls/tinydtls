@@ -7,7 +7,7 @@
 # and Eclipse Distribution License v. 1.0 which accompanies this distribution.
 #
 # The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
-# and the Eclipse Distribution License is available at 
+# and the Eclipse Distribution License is available at
 # http://www.eclipse.org/org/documents/edl-v10.php.
 #
 # Contributors:
@@ -94,7 +94,7 @@ $(LIB).so: $(OBJECTS)
 	$(LINK.c) $(LDFLAGS) -shared $^ -o $@
 
 $(LIB).a: $(OBJECTS)
-	$(AR) $(ARFLAGS) $@ $^ 
+	$(AR) $(ARFLAGS) $@ $^
 	$(RANLIB) $@
 
 clean:
@@ -104,7 +104,7 @@ clean:
 	done
 endif # WITH_CONTIKI
 
-doc:	
+doc:
 	$(MAKE) -C doc
 
 distclean:	clean
@@ -141,9 +141,9 @@ uninstall:
 	done
 	if test -d $(DESTDIR)$(includedir) ; then $(RMDIR) $(DESTDIR)$(includedir) ; fi
 
-TAGS:	
-	$(ETAGS) -o $@.new $(SOURCES) 
-	$(ETAGS) -a -o $@.new $(HEADERS) 
+TAGS:
+	$(ETAGS) -o $@.new $(SOURCES)
+	$(ETAGS) -a -o $@.new $(HEADERS)
 	mv $@.new $@
 
 # files that should be ignored by git
@@ -158,4 +158,3 @@ GITIGNOREDS:= core \*~ \*.[oa] \*.gz \*.cap \*.pcap Makefile \
 
 .gitignore:
 	echo $(GITIGNOREDS) | sed 's/ /\n/g' > $@
-

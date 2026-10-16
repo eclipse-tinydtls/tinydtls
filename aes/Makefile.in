@@ -6,7 +6,7 @@
 # and Eclipse Distribution License v. 1.0 which accompanies this distribution.
 #
 # The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
-# and the Eclipse Distribution License is available at 
+# and the Eclipse Distribution License is available at
 # http://www.eclipse.org/org/documents/edl-v10.php.
 #
 # Contributors:
@@ -33,7 +33,7 @@ CPPFLAGS=@CPPFLAGS@
 CFLAGS=-Wall -std=c99 -pedantic @CFLAGS@ @WARNING_CFLAGS@ $(EXTRA_CFLAGS)
 LDFLAGS=@LDFLAGS@
 LDLIBS=@LIBS@
-FILES:=Makefile.in $(SOURCES) $(HEADERS) 
+FILES:=Makefile.in $(SOURCES) $(HEADERS)
 DISTDIR=$(top_builddir)/@PACKAGE_TARNAME@-@PACKAGE_VERSION@
 
 .PHONY: all dirs clean install dist distclean .gitignore doc uninstall
@@ -43,7 +43,7 @@ DISTDIR=$(top_builddir)/@PACKAGE_TARNAME@-@PACKAGE_VERSION@
 
 all:
 
-check:	
+check:
 	echo DISTDIR: $(DISTDIR)
 	echo top_builddir: $(top_builddir)
 

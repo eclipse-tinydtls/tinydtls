@@ -32,4 +32,3 @@ void
 dtls_prng_init(unsigned seed) {
   (void) seed;
 }
-

@@ -412,7 +412,7 @@ static dtls_handler_t cb = {
 
 #define DTLS_CLIENT_CMD_EXIT "client:exit"
 
-int 
+int
 main(int argc, char **argv) {
   fd_set rfds, wfds;
   struct timeval timeout;

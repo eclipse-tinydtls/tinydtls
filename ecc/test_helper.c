@@ -61,7 +61,7 @@ void ecc_setRandom(uint32_t *secret){
 const uint32_t ecc_prime_m[8] = {0xffffffff, 0xffffffff, 0xffffffff, 0x00000000,
 				 0x00000000, 0x00000000, 0x00000001, 0xffffffff};
 
-							
+
 /* This is added after an static byte addition if the answer has a carry in MSB*/
 const uint32_t ecc_prime_r[8] = {0x00000001, 0x00000000, 0x00000000, 0xffffffff,
 				 0xffffffff, 0xffffffff, 0xfffffffe, 0x00000000};

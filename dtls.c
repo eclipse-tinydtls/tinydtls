@@ -2373,11 +2373,11 @@ dtls_asn1_integer_to_ec_key(uint8 *data, size_t data_len, uint8 *key,
   if (length < key_len) {
     /* pad with leading 0s */
     memset(key, 0, key_len - length);
-    memcpy(key + key_len - length, data, length); 
+    memcpy(key + key_len - length, data, length);
   }
   else {
     /* drop leading 0s if needed */
-    memcpy(key, data + length - key_len, key_len); 
+    memcpy(key, data + length - key_len, key_len);
   }
   return length + 2;
 }

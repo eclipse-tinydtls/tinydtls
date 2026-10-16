@@ -93,4 +93,3 @@ cipher_suites_usage(FILE* file, const char* head) {
   }
   fprintf(file, ")\n");
 }
-

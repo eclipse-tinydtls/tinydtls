@@ -7,7 +7,7 @@
 # and Eclipse Distribution License v. 1.0 which accompanies this distribution.
 #
 # The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
-# and the Eclipse Distribution License is available at 
+# and the Eclipse Distribution License is available at
 # http://www.eclipse.org/org/documents/edl-v10.php.
 #
 # Contributors:
@@ -68,7 +68,7 @@ AC_SEARCH_LIBS([socket], [socket])
 AC_ARG_WITH(debug,
   [AS_HELP_STRING([--without-debug],[disable all debug output and assertions])],
   [CPPFLAGS="${CPPFLAGS} -DNDEBUG"
-   NDEBUG=1], 
+   NDEBUG=1],
   [])
 
 AC_ARG_WITH(ecc,
@@ -151,8 +151,8 @@ AC_C_INLINE
 AC_TYPE_SIZE_T
 
 AC_CHECK_MEMBER([struct sockaddr_in6.sin6_len],
-		[AC_DEFINE(HAVE_SOCKADDR_IN6_SIN6_LEN, [1], 
-                  [Define to 1 if struct sockaddr_in6 has a member sin6_len.])], [], 
+		[AC_DEFINE(HAVE_SOCKADDR_IN6_SIN6_LEN, [1],
+                  [Define to 1 if struct sockaddr_in6 has a member sin6_len.])], [],
 		[#include <netinet/in.h>])
 
 # Checks for library functions.

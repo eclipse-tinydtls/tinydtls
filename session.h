@@ -6,7 +6,7 @@
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
  *
  * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at 
+ * and the Eclipse Distribution License is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
  * Contributors:
@@ -121,11 +121,11 @@ typedef struct {
 } session_t;
 #endif /* ! WITH_CONTIKI && ! WITH_RIOT_SOCK && ! WITH_LWIP_NO_LWIP_SOCKET */
 
-/** 
+/**
  * Resets the given session_t object @p sess to its default
  * values.  In particular, the member rlen must be initialized to the
  * available size for storing addresses.
- * 
+ *
  * @param sess The session_t object to initialize.
  */
 void dtls_session_init(session_t *sess);

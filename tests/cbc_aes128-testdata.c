@@ -6,7 +6,7 @@
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
  *
  * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at 
+ * and the Eclipse Distribution License is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
  * Contributors:
@@ -16,7 +16,7 @@
 
 /**
  * @file cbc_aes128-testdata.c
- * @brief test vectors from Appendix F.2.{1,2} of NIST SP 800-38A, ed. 2001 
+ * @brief test vectors from Appendix F.2.{1,2} of NIST SP 800-38A, ed. 2001
  */
 
 struct test_vector {
@@ -46,7 +46,7 @@ struct test_vector data[] = {
       0x3f, 0xf1, 0xca, 0xa1, 0x68, 0x1f, 0xac, 0x09, 0x12, 0x0e, 0xca, 0x30, 0x75, 0x86, 0xe1, 0xa7
     }	/* result */
   },
-  
+
   /* F.2.2 (decrypt) */
   { 1, 4 * AES_BLKLEN, 0,
     { 0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c },	/* AES key */

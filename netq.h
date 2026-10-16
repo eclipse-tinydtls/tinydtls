@@ -6,7 +6,7 @@
  * and Eclipse Distribution License v. 1.0 which accompanies this distribution.
  *
  * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at 
+ * and the Eclipse Distribution License is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
  * Contributors:
@@ -47,9 +47,9 @@ typedef enum netq_job_type_t {
   TIMEOUT 	/**< timeout of the related alert */
 } netq_job_type_t;
 
-/** 
+/**
  * Datagrams in the netq_t structure have a fixed maximum size of
- * DTLS_MAX_BUF to simplify memory management on constrained nodes. */ 
+ * DTLS_MAX_BUF to simplify memory management on constrained nodes. */
 typedef unsigned char netq_packet_t[DTLS_MAX_BUF];
 
 typedef struct netq_t {
@@ -80,7 +80,7 @@ static inline void netq_init(void)
 void netq_init(void);
 #endif
 
-/** 
+/**
  * Adds a node to the given queue, ordered by their time-stamp t.
  * This function returns @c 0 on error, or non-zero if @p node has
  * been added successfully.
@@ -103,7 +103,7 @@ netq_t *netq_node_new(size_t size);
 
 /**
  * Returns a pointer to the first item in given queue or NULL if
- * empty. 
+ * empty.
  */
 netq_t *netq_head(netq_t **queue);
 

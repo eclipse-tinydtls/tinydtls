@@ -3,7 +3,7 @@ DESCRIPTION:
     own implementation and so may be completely incorrect.  Use with
     a very large grain of salt.  The input sample is exactly 5 times
     size of the SHA-256 block length.
-    
+
     (Total length of test vector data: 320)
 
 FILE:
@@ -19,4 +19,3 @@ SHA384:
 SHA512:
     caf970d3638e21053173a638c4b94d6d1ff87bc47b58f8ee928fbe9e245c23ab
     f81019e45bf017ecc8610e5e0b95e3b025ccd611a772ca4fb3dfba26f0859725
-

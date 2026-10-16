@@ -18,7 +18,7 @@
 
 #include "ccm-testdata.c"
 
-static void 
+static void
 dump(unsigned char *buf, size_t len) {
   size_t i = 0;
   while (i < len) {
@@ -58,11 +58,11 @@ int main(int argc, char **argv) {
       return 1;
     }
 
-    len = dtls_ccm_encrypt_message(&ctx, data[n].M, data[n].L, data[n].nonce, 
-				   data[n].msg + data[n].la, 
-				   data[n].lm - data[n].la, 
+    len = dtls_ccm_encrypt_message(&ctx, data[n].M, data[n].L, data[n].nonce,
+				   data[n].msg + data[n].la,
+				   data[n].lm - data[n].la,
 				   data[n].msg, data[n].la);
-    
+
     len +=  + data[n].la;
     printf("Packet Vector #%zu ", n+1);
     if ((size_t)len != data[n].r_lm || memcmp(data[n].msg, data[n].result, len)) {
@@ -71,14 +71,14 @@ int main(int argc, char **argv) {
     } else {
       printf("OK, ");
     }
-    
+
     printf("result is (total length = %lu):\n\t", len);
     dump(data[n].msg, len);
 
-    len = dtls_ccm_decrypt_message(&ctx, data[n].M, data[n].L, data[n].nonce, 
-				   data[n].msg + data[n].la, len - data[n].la, 
+    len = dtls_ccm_decrypt_message(&ctx, data[n].M, data[n].L, data[n].nonce,
+				   data[n].msg + data[n].la, len - data[n].la,
 				   data[n].msg, data[n].la);
-    
+
     if (len < 0) {
       printf("Packet Vector #%zu: cannot decrypt message\n", n+1);
       ret = 1;

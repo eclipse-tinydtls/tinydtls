@@ -6,4 +6,3 @@ tinydtls_src = dtls.c crypto.c hmac.c rijndael.c rijndael_wrap.c sha2.c ccm.c ne
 # This activates debugging support
 # CFLAGS += -DNDEBUG
 tinydtls_src += dtls_debug.c
-

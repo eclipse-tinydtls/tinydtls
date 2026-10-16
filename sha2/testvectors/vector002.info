@@ -2,7 +2,7 @@ DESCRIPTION:
     The PDF document only provided sample output for SHA-256 using
     this test data.  I have provided SHA-384 and SHA-512 sample
     output from my own implementation which may not be correct.
-    
+
     (Total length of test vector data: 56)
 
 FILE:
@@ -18,4 +18,3 @@ SHA384:
 SHA512:
     204a8fc6dda82f0a0ced7beb8e08a41657c16ef468b228a8279be331a703c335
     96fd15c13b1b07f9aa1d3bea57789ca031ad85c7a71dd70354ec631238ca3445
-

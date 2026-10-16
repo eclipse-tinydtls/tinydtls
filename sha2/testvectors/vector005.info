@@ -4,7 +4,7 @@ DESCRIPTION:
     a very large grain of salt.  The input sample is EMPTY (no bits).
     Mr. David A. Ireland's SHA-256 implementation agrees with my own
     implementation on the output of this test vector (SHA-256 only).
-    
+
     (Total length of test vector data: 0)
 
 FILE:
@@ -20,4 +20,3 @@ SHA384:
 SHA512:
     cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce
     47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e
-
