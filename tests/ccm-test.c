@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
       printf("Packet Vector #%zu: cannot decrypt message\n", n+1);
       ret = 1;
     } else {
-      printf("\t*** MAC verified (total length = %lu) ***\n", len + data[n].la);
+      printf("\t*** MAC verified (total length = %zu) ***\n", (size_t)(len + data[n].la));
     }
   }
 
